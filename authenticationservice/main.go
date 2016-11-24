@@ -8,6 +8,7 @@ func main() {
     r := gin.Default()
     router.POST("/signup", signup)
     router.POST("/login", login)
+    router.Run(":3001")
 }
 
 // Take in username and password, and store in db as (username, encrypt(password))
