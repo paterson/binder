@@ -1,9 +1,9 @@
-package main
+package authservice
 
 import (
     "net/http"
     "github.com/gin-gonic/gin"
-    "github.com/paterson/binder/authenticationservice/store"
+    "github.com/paterson/binder/authservice/store"
 )
 
 const (
@@ -46,13 +46,4 @@ func login(ctx *gin.Context) {
     } else {
          ctx.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
     }
-}
-
-func sampleMethod(ctx *gin.Context) {
-    //request, err := NewRequest(ctx)
-    //if err == nil {
-        // Auth is valid
-        //filepath := request.Query("filepath")
-        //request.Respond(http.StatusOK, json)
-    //}
 }

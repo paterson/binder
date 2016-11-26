@@ -1,4 +1,4 @@
-package main
+package authservice
 
 import (
     "github.com/gin-gonic/gin"

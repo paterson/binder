@@ -1,7 +1,8 @@
-package main
+package authservice
 
 import (
     "github.com/gin-gonic/gin"
+    "mime/multipart"
 )
 
 /* Request. Key: Session key */
@@ -16,7 +17,7 @@ type EncryptedRequest struct {
     body            EncryptedBody
 }
 
-func NewRequest(ctx *gin.Context) (Request, error) {
+func Authenticate(ctx *gin.Context) (Request, error) {
     ticket := EncryptedTicket{SessionKey: EncryptedSessionKey(ctx.Query("ticket"))}
     encryptedRequest := EncryptedRequest{Ticket: ticket, body: EncryptedBody(ctx.Query("body"))}
     request, err := encryptedRequest.decrypt()
@@ -26,6 +27,12 @@ func NewRequest(ctx *gin.Context) (Request, error) {
 
 func (request Request) Query(key string) string {
     return request.ctx.Query(key)
+}
+
+func (request Request) RetrieveUploadedFile() (multipart.File, string, error) {
+    file, header, err := request.ctx.Request.FormFile("upload")
+    filename := header.Filename
+    return file, filename, err
 }
 
 func (request Request) Respond(code int, body Body) {

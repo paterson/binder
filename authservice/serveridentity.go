@@ -1,7 +1,7 @@
-package main
+package authservice
 
 import (
-    "github.com/paterson/binder/authenticationservice/encryption"
+    "github.com/paterson/binder/authservice/encryption"
     "log"
 )
 

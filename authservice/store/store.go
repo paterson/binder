@@ -35,7 +35,6 @@ func (s *Store) CreateUser(u *User) *Store {
     s.Error = s.db.Update(func(tx *bolt.Tx) error {
         bucket := s.findOrCreateBucket(tx, s.usersBucket)
         bucket.Put([]byte(u.Username), []byte(u.Password))
-        val := bucket.Get([]byte(u.Username))
         return nil
     })
     return s
