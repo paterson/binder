@@ -1,8 +1,9 @@
 package request
 
 import (
-	"github.com/gin-gonic/gin"
 	"mime/multipart"
+
+	"github.com/gin-gonic/gin"
 )
 
 /* Request. Key: Session key */

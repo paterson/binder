@@ -2,6 +2,7 @@ package request
 
 import (
 	"encoding/json"
+
 	"github.com/paterson/binder/utils/encryption"
 )
 
@@ -22,8 +23,8 @@ func (encryptedBody EncryptedBody) Decrypt(sessionKey SessionKey) (Body, error) 
 }
 
 func (body Body) Encrypt(sessionKey SessionKey) EncryptedBody {
-	cipher := encryption.Encrypt(string(sessionKey), body.toString()) // string(map[string]string)?
-	return EncryptedBody(cipher)                                      // Handle error?
+	cipher := encryption.Encrypt(string(sessionKey), body.toString())
+	return EncryptedBody(cipher)
 }
 
 func (body Body) toString() string {

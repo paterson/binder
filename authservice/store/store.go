@@ -2,8 +2,9 @@ package store
 
 import (
 	"fmt"
-	"github.com/boltdb/bolt"
 	"os"
+
+	"github.com/boltdb/bolt"
 )
 
 type Store struct {
@@ -18,7 +19,7 @@ var defaultStore *Store
 
 func DefaultStore() *Store {
 	if defaultStore == nil {
-		db, err := bolt.Open("auth.db", 0600, nil)
+		db, err := bolt.Open("store/auth.db", 0600, nil)
 		checkError(err)
 		defaultStore = &Store{
 			db:              db,

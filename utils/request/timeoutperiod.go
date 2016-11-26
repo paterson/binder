@@ -1,8 +1,9 @@
 package request
 
 import (
-	"github.com/paterson/binder/utils/encryption"
 	"log"
+
+	"github.com/paterson/binder/utils/encryption"
 )
 
 type TimeoutPeriod string

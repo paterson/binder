@@ -1,10 +1,11 @@
 package request
 
 import (
-	"github.com/paterson/binder/utils/encryption"
 	"log"
 	"math/rand"
 	"time"
+
+	"github.com/paterson/binder/utils/encryption"
 )
 
 type SessionKey string

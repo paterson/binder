@@ -1,10 +1,11 @@
 package main
 
 import (
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/paterson/binder/authservice/store"
 	"github.com/paterson/binder/utils/request"
-	"os"
 )
 
 var Store *store.Store
