@@ -1,6 +1,4 @@
 build:
-	$(MAKE) -C utils/encryption install
-	$(MAKE) -C utils/request install
 	$(MAKE) -C authservice install
 	$(MAKE) -C client install
 	$(MAKE) -C clientproxy install

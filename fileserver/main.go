@@ -2,9 +2,9 @@ package fileserver
 
 import (
     "io"
-    "net/http"
+    "os"
+    "fmt"
     "github.com/gin-gonic/gin"
-    "github.com/paterson/binder/authservice"
     "github.com/paterson/binder/utils/request"
     "mime/multipart"
 )
@@ -13,7 +13,7 @@ func main() {
     router := gin.Default()
     router.POST("/write", write)
     router.Static("/", "./.files")
-    router.Run(":3001")
+    router.Run(port())
 }
 
 func write(ctx *gin.Context) {
@@ -23,7 +23,7 @@ func write(ctx *gin.Context) {
         checkError(err)
         err = storeFile(file, filename)
         checkError(err)
-        req.Respond(http.StatusOK, Body{"success": "true"})
+        req.Respond(request.StatusOK, request.Body{"success": "true"})
     }
 }
 
@@ -32,6 +32,10 @@ func storeFile(file multipart.File, filename string) error {
     defer out.Close()
     _, err = io.Copy(out, file)
     return err
+}
+
+func port() string {
+    return ":" + os.Args[1]
 }
 
 func checkError(err error) {

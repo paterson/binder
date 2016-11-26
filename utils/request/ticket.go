@@ -1,5 +1,9 @@
 package request
 
+const (
+    SERVER_KEY = "lkm4iuPKCCJQGBGB"
+)
+
 /* Ticket. Key: Server Key */
 type Ticket struct {
     SessionKey SessionKey

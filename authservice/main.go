@@ -1,14 +1,10 @@
 package authservice
 
 import (
-    "net/http"
+    "os"
     "github.com/gin-gonic/gin"
     "github.com/paterson/binder/authservice/store"
     "github.com/paterson/binder/utils/request"
-)
-
-const (
-    SERVER_KEY = "lkm4iuPKCCJQGBGB"
 )
 
 var Store *store.Store
@@ -18,7 +14,7 @@ func main() {
     router := gin.Default()
     router.POST("/signup", signup)
     router.POST("/login", login)
-    router.Run(":3001")
+    router.Run(port())
 }
 
 // Take in username and password, and store in db as (username, encrypt(password))
@@ -27,11 +23,11 @@ func signup(ctx *gin.Context) {
     Store = Store.CreateUser(&user)
     if Store.Error == nil {
         token := request.GenerateToken()
-        response := request.AuthenticatedResponse{token: token}
-        encryptedResponse := response.encrypt(ctx.Query("password"))
-        ctx.JSON(http.StatusOK, encryptedResponse.EncodeJSON())
+        response := request.AuthenticatedResponse{Token: token}
+        encryptedResponse := response.Encrypt(ctx.Query("password"))
+        ctx.JSON(request.StatusOK, encryptedResponse.EncodeJSON())
     } else {
-         ctx.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+         ctx.JSON(request.StatusUnauthorized, gin.H{"status": "unauthorized"})
     }
 }
 
@@ -41,10 +37,14 @@ func login(ctx *gin.Context) {
     Store = Store.UserExists(&user)
     if Store.SuccessfulQuery {
         token := request.GenerateToken()
-        response := request.AuthenticatedResponse{token: token}
-        encryptedResponse := response.encrypt(ctx.Query("password"))
-        ctx.JSON(http.StatusOK, encryptedResponse.EncodeJSON())
+        response := request.AuthenticatedResponse{Token: token}
+        encryptedResponse := response.Encrypt(ctx.Query("password"))
+        ctx.JSON(request.StatusOK, encryptedResponse.EncodeJSON())
     } else {
-         ctx.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+         ctx.JSON(request.StatusUnauthorized, gin.H{"status": "unauthorized"})
     }
+}
+
+func port() string {
+    return ":" + os.Args[1]
 }

@@ -5,15 +5,15 @@ import (
 )
 
 type AuthenticatedResponse struct {
-    token Token
+    Token Token
 }
 
 type EncryptedAuthenticatedResponse struct {
-    token EncryptedToken
+    Token EncryptedToken
 }
 
 func (encryptedResponse  EncryptedAuthenticatedResponse) EncodeJSON() gin.H {
-    token := encryptedResponse.token
+    token := encryptedResponse.Token
     return gin.H{
         "ticket":          token.Ticket.SessionKey,
         "session_key":     token.SessionKey,
@@ -22,10 +22,10 @@ func (encryptedResponse  EncryptedAuthenticatedResponse) EncodeJSON() gin.H {
     }
 }
 
-func (encryptedResponse EncryptedAuthenticatedResponse) decrypt(password string) AuthenticatedResponse {
-    return AuthenticatedResponse{token: encryptedResponse.token.decrypt(password)}
+func (encryptedResponse EncryptedAuthenticatedResponse) Decrypt(password string) AuthenticatedResponse {
+    return AuthenticatedResponse{Token: encryptedResponse.Token.decrypt(password)}
 }
 
-func (response AuthenticatedResponse) encrypt(password string) EncryptedAuthenticatedResponse {
-    return EncryptedAuthenticatedResponse{token: response.token.encrypt(password)}
+func (response AuthenticatedResponse) Encrypt(password string) EncryptedAuthenticatedResponse {
+    return EncryptedAuthenticatedResponse{Token: response.Token.encrypt(password)}
 }

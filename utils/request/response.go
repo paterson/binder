@@ -1,8 +1,12 @@
 package request
 
 import (
+    "net/http"
     "github.com/gin-gonic/gin"
 )
+
+var StatusOK           = http.StatusOK
+var StatusUnauthorized = http.StatusUnauthorized
 
 /* Response. Key: Session key */
 type Response struct {
