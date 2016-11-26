@@ -4,12 +4,12 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
-    "log"
-    "errors"
-	"crypto/sha256"
+	"log"
 )
 
 // encrypt string to base64 crypto using AES
@@ -39,7 +39,7 @@ func Encrypt(keytext string, text string) string {
 
 // decrypt from base64 to decrypted string
 func Decrypt(keytext string, cryptoText string) (string, error) {
-    key := hashKey(keytext)
+	key := hashKey(keytext)
 	ciphertext, _ := base64.URLEncoding.DecodeString(cryptoText)
 
 	block, err := aes.NewCipher(key)
@@ -65,5 +65,5 @@ func Decrypt(keytext string, cryptoText string) (string, error) {
 
 func hashKey(key string) []byte {
 	hash := sha256.Sum256([]byte(key))
-    return hash[:] // Convert [32]byte to []byte
+	return hash[:] // Convert [32]byte to []byte
 }

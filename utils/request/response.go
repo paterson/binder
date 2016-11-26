@@ -1,33 +1,33 @@
 package request
 
 import (
-    "net/http"
-    "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
-var StatusOK           = http.StatusOK
+var StatusOK = http.StatusOK
 var StatusUnauthorized = http.StatusUnauthorized
 
 /* Response. Key: Session key */
 type Response struct {
-    Body  Body
+	Body Body
 }
 
 type EncryptedResponse struct {
-    body EncryptedBody
+	body EncryptedBody
 }
 
 func (encryptedResponse EncryptedResponse) EncodeJSON() gin.H {
-    return gin.H{
-        "body": encryptedResponse.body,
-    }
+	return gin.H{
+		"body": encryptedResponse.body,
+	}
 }
 
 func (encryptedResponse EncryptedResponse) decrypt(sessionKey SessionKey) (Response, error) {
-    body, err := encryptedResponse.body.Decrypt(sessionKey)
-    return Response{Body: body}, err
+	body, err := encryptedResponse.body.Decrypt(sessionKey)
+	return Response{Body: body}, err
 }
 
 func (response Response) encrypt(sessionKey SessionKey) EncryptedResponse {
-    return EncryptedResponse{body: response.Body.Encrypt(sessionKey)}
+	return EncryptedResponse{body: response.Body.Encrypt(sessionKey)}
 }
