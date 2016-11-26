@@ -5,6 +5,7 @@ import (
     "net/http"
     "github.com/gin-gonic/gin"
     "github.com/paterson/binder/authservice"
+    "github.com/paterson/binder/utils/request"
     "mime/multipart"
 )
 
@@ -16,13 +17,13 @@ func main() {
 }
 
 func write(ctx *gin.Context) {
-    request, err := authservice.Authenticate(ctx)
+    req, err := request.Authenticate(ctx)
     if err == nil { // Auth is valid
-        file, filename, err := request.RetrieveUploadedFile()
+        file, filename, err := req.RetrieveUploadedFile()
         checkError(err)
         err = storeFile(file, filename)
         checkError(err)
-        request.Respond(http.StatusOK, Body{"success": "true"})
+        req.Respond(http.StatusOK, Body{"success": "true"})
     }
 }
 

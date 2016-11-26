@@ -1,4 +1,4 @@
-package authservice
+package request
 
 /* Ticket. Key: Server Key */
 type Ticket struct {

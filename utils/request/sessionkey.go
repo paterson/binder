@@ -1,7 +1,7 @@
-package authservice
+package request
 
 import (
-    "github.com/paterson/binder/authservice/encryption"
+    "github.com/paterson/binder/utils/encryption"
     "log"
     "math/rand"
     "time"

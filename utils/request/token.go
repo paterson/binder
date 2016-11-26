@@ -1,4 +1,4 @@
-package authservice
+package request
 
 /* Token. Key: User password */
 type Token struct {

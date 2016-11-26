@@ -4,6 +4,7 @@ import (
     "net/http"
     "github.com/gin-gonic/gin"
     "github.com/paterson/binder/authservice/store"
+    "github.com/paterson/binder/utils/request"
 )
 
 const (
@@ -25,8 +26,8 @@ func signup(ctx *gin.Context) {
     user := store.User{Username: ctx.Query("username"), Password: ctx.Query("password")}
     Store = Store.CreateUser(&user)
     if Store.Error == nil {
-        token := GenerateToken()
-        response := AuthenticatedResponse{token: token}
+        token := request.GenerateToken()
+        response := request.AuthenticatedResponse{token: token}
         encryptedResponse := response.encrypt(ctx.Query("password"))
         ctx.JSON(http.StatusOK, encryptedResponse.EncodeJSON())
     } else {
@@ -39,8 +40,8 @@ func login(ctx *gin.Context) {
     user := store.User{Username: ctx.Query("username"), Password: ctx.Query("password")}
     Store = Store.UserExists(&user)
     if Store.SuccessfulQuery {
-        token := GenerateToken()
-        response := AuthenticatedResponse{token: token}
+        token := request.GenerateToken()
+        response := request.AuthenticatedResponse{token: token}
         encryptedResponse := response.encrypt(ctx.Query("password"))
         ctx.JSON(http.StatusOK, encryptedResponse.EncodeJSON())
     } else {
