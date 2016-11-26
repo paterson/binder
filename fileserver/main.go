@@ -1,4 +1,4 @@
-package fileserver
+package main
 
 import (
     "io"
@@ -12,7 +12,7 @@ import (
 func main() {
     router := gin.Default()
     router.POST("/write", write)
-    router.Static("/", "./.files")
+    router.Static("/", "./.files") // Can't do this..
     router.Run(port())
 }
 

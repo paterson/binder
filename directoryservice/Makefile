@@ -2,4 +2,4 @@ install:
 	#go install
 
 run:
-	#directoryservice 3003
+	#directoryservice 3003 &

@@ -2,4 +2,4 @@ install:
 	#go install
 
 run:
-	#clientproxy 3002
+	#clientproxy 3002 &

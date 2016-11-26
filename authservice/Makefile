@@ -3,4 +3,4 @@ install:
 	go install
 
 run:
-	authservice 3000
+	authservice 3000 &
