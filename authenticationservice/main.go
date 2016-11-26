@@ -1,50 +1,58 @@
 package main
 
 import (
+    "net/http"
     "github.com/gin-gonic/gin"
+    "github.com/paterson/binder/authenticationservice/store"
 )
 
-var store Store
+const (
+    SERVER_KEY = "lkm4iuPKCCJQGBGB"
+)
+
+var Store *store.Store
 
 func main() {
-    r := gin.Default()
+    Store = store.DefaultStore()
+    router := gin.Default()
     router.POST("/signup", signup)
     router.POST("/login", login)
     router.Run(":3001")
-    store := DefaultStore
 }
 
 // Take in username and password, and store in db as (username, encrypt(password))
 func signup(ctx *gin.Context) {
-    err := store.CreateUser(ctx.Query("username", ctx.Query("password"))
-    if err != nil {
+    user := store.User{Username: ctx.Query("username"), Password: ctx.Query("password")}
+    Store = Store.CreateUser(&user)
+    if Store.Error == nil {
         token := GenerateToken()
         response := AuthenticatedResponse{token: token}
-        encryptedResponse := response.encrypt(user.Password)
-        ctx.JSON(code, encryptedResponse.EncodeJSON())
+        encryptedResponse := response.encrypt(ctx.Query("password"))
+        ctx.JSON(http.StatusOK, encryptedResponse.EncodeJSON())
     } else {
-        // Fail
+         ctx.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
     }
 }
 
 // Find row with username in db and ensure encrypt(password) = encrypted_password
 func login(ctx *gin.Context) {
-    exists := store.UserExists(ctx.Query("username", ctx.Query("password"))
-    if exists {
+    user := store.User{Username: ctx.Query("username"), Password: ctx.Query("password")}
+    Store = Store.UserExists(&user)
+    if Store.SuccessfulQuery {
         token := GenerateToken()
         response := AuthenticatedResponse{token: token}
-        encryptedResponse := response.encrypt(user.Password)
-        ctx.JSON(code, encryptedResponse.EncodeJSON())
+        encryptedResponse := response.encrypt(ctx.Query("password"))
+        ctx.JSON(http.StatusOK, encryptedResponse.EncodeJSON())
     } else {
-        // Fail
+         ctx.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
     }
 }
 
 func sampleMethod(ctx *gin.Context) {
-    request, err := NewRequest(ctx)
-    if err == nil {
+    //request, err := NewRequest(ctx)
+    //if err == nil {
         // Auth is valid
-        filepath := request.Query("filepath")
-        request.Respond(200, json)
-    }
+        //filepath := request.Query("filepath")
+        //request.Respond(http.StatusOK, json)
+    //}
 }

@@ -9,10 +9,10 @@ type EncryptedTicket struct {
     SessionKey EncryptedSessionKey
 }
 
-func (encryptedTicket EncryptedTicket) decrypt() Ticket {
-
+func (encryptedTicket EncryptedTicket) Decrypt() Ticket {
+    return Ticket{SessionKey: encryptedTicket.SessionKey.Decrypt(SERVER_KEY)}
 }
 
-func (ticket Ticket) encrypt() EncryptedTicket {
-
+func (ticket Ticket) Encrypt() EncryptedTicket {
+    return EncryptedTicket{SessionKey: ticket.SessionKey.Encrypt(SERVER_KEY)}
 }

@@ -1,13 +1,5 @@
 package main
 
-type SessionKey               string
-type ServerIdentity           string
-type TimeoutPeriod            int
-
-type EncryptedSessionKey      string
-type EncryptedServerIdentity  string
-type EncryptedTimeoutPeriod   int
-
 /* Token. Key: User password */
 type Token struct {
     Ticket         EncryptedTicket
@@ -24,13 +16,30 @@ type EncryptedToken struct {
 }
 
 func GenerateToken() Token {
-
+    sessionKey := NewSessionKey()
+    ticket     := Ticket{SessionKey: sessionKey}
+    return Token{
+        Ticket:         ticket.Encrypt(),
+        SessionKey:     sessionKey,
+        ServerIdentity: AuthServerIdentity,
+        Timeout:        DefaultTimeout,
+    }
 }
 
 func (encryptedToken EncryptedToken) decrypt(password string) Token {
-
+    return Token{
+        Ticket:         encryptedToken.Ticket,
+        SessionKey:     encryptedToken.SessionKey.Decrypt(password),
+        ServerIdentity: encryptedToken.ServerIdentity.Decrypt(password),
+        Timeout:        encryptedToken.Timeout.Decrypt(password),
+    }
 }
 
-func (token Token) encrypt(password string) Token {
-
+func (token Token) encrypt(password string) EncryptedToken {
+    return EncryptedToken{
+        Ticket:         token.Ticket,
+        SessionKey:     token.SessionKey.Encrypt(password),
+        ServerIdentity: token.ServerIdentity.Encrypt(password),
+        Timeout:        token.Timeout.Encrypt(password),
+    }
 }

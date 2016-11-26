@@ -12,13 +12,13 @@ type EncryptedAuthenticatedResponse struct {
     token EncryptedToken
 }
 
-func (encryptedResponse EncryptedResponse) EncodeJSON() gin.H {
+func (encryptedResponse  EncryptedAuthenticatedResponse) EncodeJSON() gin.H {
     token := encryptedResponse.token
     return gin.H{
         "ticket":          token.Ticket.SessionKey,
         "session_key":     token.SessionKey,
         "server_identity": token.ServerIdentity,
-        "timeout":         token.Timeout
+        "timeout":         token.Timeout,
     }
 }
 
