@@ -7,12 +7,16 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-type Store struct {
-	db              *bolt.DB
-	rootBucket      []byte
-	usersBucket     []byte
-	SuccessfulQuery bool // tracks outcome of last query
+type Result struct {
+	SuccessfulQuery bool
 	Error           error
+}
+
+type Store struct {
+	db          *bolt.DB
+	rootBucket  []byte
+	usersBucket []byte
+	Result      Result
 }
 
 var defaultStore *Store
@@ -22,18 +26,17 @@ func DefaultStore() *Store {
 		db, err := bolt.Open("store/auth.db", 0600, nil)
 		checkError(err)
 		defaultStore = &Store{
-			db:              db,
-			rootBucket:      []byte("root"),
-			usersBucket:     []byte("users"),
-			SuccessfulQuery: false,
-			Error:           nil,
+			db:          db,
+			rootBucket:  []byte("root"),
+			usersBucket: []byte("users"),
+			Result:      Result{SuccessfulQuery: false, Error: nil},
 		}
 	}
 	return defaultStore
 }
 
 func (s *Store) CreateUser(u *User) *Store {
-	s.Error = s.db.Update(func(tx *bolt.Tx) error {
+	s.Result.Error = s.db.Update(func(tx *bolt.Tx) error {
 		bucket := s.findOrCreateBucket(tx, s.usersBucket)
 		bucket.Put([]byte(u.Username), []byte(u.Password))
 		return nil
@@ -42,16 +45,15 @@ func (s *Store) CreateUser(u *User) *Store {
 }
 
 func (s *Store) UserExists(u *User) *Store {
-	s.Error = s.db.View(func(tx *bolt.Tx) error {
+	s.Result.Error = s.db.View(func(tx *bolt.Tx) error {
 		bucket := s.findBucket(tx, s.usersBucket)
 		val := bucket.Get([]byte(u.Username))
-		s.SuccessfulQuery = string(val) == u.Password
+		s.Result.SuccessfulQuery = string(val) == u.Password
 		return nil
 	})
 	return s
 }
 
-// TODO: Error handling
 func (s *Store) findBucket(tx *bolt.Tx, bucketName []byte) *bolt.Bucket {
 	return tx.Bucket(s.rootBucket).Bucket(bucketName)
 }

@@ -20,12 +20,12 @@ func main() {
 
 // Take in username and password, and store in db as (username, encrypt(password))
 func signup(ctx *gin.Context) {
-	user := store.User{Username: ctx.Query("username"), Password: ctx.Query("password")}
+	user := store.User{Username: ctx.Param("username"), Password: ctx.Param("password")}
 	Store = Store.CreateUser(&user)
-	if Store.Error == nil {
+	if Store.Result.Error == nil {
 		token := request.GenerateToken()
 		response := request.AuthenticatedResponse{Token: token}
-		encryptedResponse := response.Encrypt(ctx.Query("password"))
+		encryptedResponse := response.Encrypt(ctx.Param("password"))
 		ctx.JSON(request.StatusOK, encryptedResponse.EncodeJSON())
 	} else {
 		ctx.JSON(request.StatusUnauthorized, gin.H{"status": "unauthorized"})
@@ -36,7 +36,7 @@ func signup(ctx *gin.Context) {
 func login(ctx *gin.Context) {
 	user := store.User{Username: ctx.Query("username"), Password: ctx.Query("password")}
 	Store = Store.UserExists(&user)
-	if Store.SuccessfulQuery {
+	if Store.Result.SuccessfulQuery {
 		token := request.GenerateToken()
 		response := request.AuthenticatedResponse{Token: token}
 		encryptedResponse := response.Encrypt(ctx.Query("password"))

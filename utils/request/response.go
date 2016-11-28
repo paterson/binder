@@ -8,6 +8,8 @@ import (
 
 var StatusOK = http.StatusOK
 var StatusUnauthorized = http.StatusUnauthorized
+var Status404 = 404
+var Status400 = 400
 
 /* Response. Key: Session key */
 type Response struct {

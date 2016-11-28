@@ -12,9 +12,17 @@ import (
 
 func main() {
 	router := gin.Default()
+	router.POST("/read", read)
 	router.POST("/write", write)
-	router.Static("/", "./.files") // Can't do this..
 	router.Run(port())
+}
+
+func read(ctx *gin.Context) {
+	req, err := request.Authenticate(ctx)
+	if err == nil {
+		filepath := req.Param("filepath")
+		req.SendFile(filepath)
+	}
 }
 
 func write(ctx *gin.Context) {

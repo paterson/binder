@@ -6,6 +6,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Method string
+
+const (
+	GET  Method = "GET"
+	POST Method = "POST"
+)
+
 /* Request. Key: Session key */
 type Request struct {
 	Ticket Ticket
@@ -19,15 +26,30 @@ type EncryptedRequest struct {
 }
 
 func Authenticate(ctx *gin.Context) (Request, error) {
-	ticket := EncryptedTicket{SessionKey: EncryptedSessionKey(ctx.Query("ticket"))}
-	encryptedRequest := EncryptedRequest{Ticket: ticket, body: EncryptedBody(ctx.Query("body"))}
+	ticket := EncryptedTicket{SessionKey: EncryptedSessionKey(ctx.Param("ticket"))}
+	encryptedRequest := EncryptedRequest{Ticket: ticket, body: EncryptedBody(ctx.Param("body"))}
 	request, err := encryptedRequest.decrypt()
 	request.ctx = ctx
 	return request, err
 }
 
-func (request Request) Query(key string) string {
-	return request.ctx.Query(key)
+func (request Request) Method() string {
+	if request.ctx.Request.Method == "POST" {
+		return "POST"
+	}
+	return "GET"
+}
+
+func (request Request) Param(key string) string {
+	if request.Method() == "GET" {
+		return request.ctx.Query(key)
+	} else {
+		return request.ctx.PostForm(key)
+	}
+}
+
+func (request Request) SendFile(filepath string) {
+	request.ctx.File(filepath)
 }
 
 func (request Request) RetrieveUploadedFile() (multipart.File, string, error) {
