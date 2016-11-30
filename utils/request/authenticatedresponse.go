@@ -13,19 +13,13 @@ type EncryptedAuthenticatedResponse struct {
 }
 
 func (encryptedResponse EncryptedAuthenticatedResponse) EncodeJSON() gin.H {
-	token := encryptedResponse.Token
-	return gin.H{
-		"ticket":          token.Ticket.SessionKey,
-		"session_key":     token.SessionKey,
-		"server_identity": token.ServerIdentity,
-		"timeout":         token.Timeout,
-	}
+	return encryptedResponse.Token.ToJSON()
 }
 
 func (encryptedResponse EncryptedAuthenticatedResponse) Decrypt(password string) AuthenticatedResponse {
-	return AuthenticatedResponse{Token: encryptedResponse.Token.decrypt(password)}
+	return AuthenticatedResponse{Token: encryptedResponse.Token.Decrypt(password)}
 }
 
 func (response AuthenticatedResponse) Encrypt(password string) EncryptedAuthenticatedResponse {
-	return EncryptedAuthenticatedResponse{Token: response.Token.encrypt(password)}
+	return EncryptedAuthenticatedResponse{Token: response.Token.Encrypt(password)}
 }

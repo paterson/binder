@@ -53,7 +53,7 @@ func (request Request) SendFile(filepath string) {
 }
 
 func (request Request) RetrieveUploadedFile() (multipart.File, string, error) {
-	file, header, err := request.ctx.Request.FormFile("upload")
+	file, header, err := request.ctx.Request.FormFile("file")
 	filename := header.Filename
 	return file, filename, err
 }

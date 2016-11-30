@@ -2,4 +2,4 @@ install:
 	go install
 
 run:
-	fileserver 3004
+	fileserver 3003

@@ -1,79 +1,102 @@
 package clientproxy
 
 import (
-    "github.com/paterson/binder/utils/request"
-)
-
-const (
-    signupURL       = "http://localhost:3000/signup"
-    loginURL        = "http://localhost:3000/login"
-    readRequestURL  = "http://localhost:3003/request/read"
-    writeRequestURL = "http://localhost:3003/request/write"
+	"fmt"
+	"github.com/paterson/binder/utils/api"
+	"github.com/paterson/binder/utils/request"
+	"io/ioutil"
+	"os"
 )
 
 type ClientProxy struct {
-    Ticket     string
-    SessionKey string
-    http       gorequest
+	Token request.Token
 }
 
 type AuthenticateParams struct {
-    username  string
-    password  string
+	username string
+	password string
 }
 
 type FileParams struct {
-    ticket     string
-    sessionKey string
-    filepath   string
+	ticket     request.EncryptedTicket
+	sessionKey request.SessionKey
+	filepath   string
 }
 
-func NewClientPolicy() *ClientProxy {
-    return ClientProxy{
-        http: gorequest.New(),
-    }
+func New() *ClientProxy {
+	return &ClientProxy{}
 }
 
-func (clientProxy *ClientProxy) Signup(username string, password string)  {
-    params := AuthenticateParams{username: username, password: password}
-    resp, body, errs := clientProxy.http.Post(signupURL).Send(params).End()
+func (clientProxy *ClientProxy) Signup(username string, password string) {
+	params := AuthenticateParams{username: username, password: password}
+	json := api.Signup(params)
+	encryptedToken := request.TokenFromJSON(json)
+	token := encryptedToken.Decrypt(password)
+	clientProxy.Token = token
 }
 
 func (clientProxy *ClientProxy) Login(username string, password string) {
-    params := AuthenticateParams{username: username, password: password}
-    resp, body, errs := clientProxy.http.Post(loginURL).Send(params).End()
+	params := AuthenticateParams{username: username, password: password}
+	json := api.Login(params)
+	encryptedToken := request.TokenFromJSON(json)
+	token := encryptedToken.Decrypt(password)
+	clientProxy.Token = token
 }
 
-func (clientProxy *ClientProxy) Read(filepath) {
-    params := FileParams{
-        ticket:     clientProxy.Ticket,
-        sessionKey: clientProxy.SessionKey,
-        filepath:   filepath
-    }
-    resp, body, errs := clientProxy.http.Post(readRequestURL).Send(params).End()
-    var dat map[string]interface{}
-    err := json.Unmarshal(body, &dat)
-    if err == nil {
-        return
-    }
-    resp, body, errs := clientProxy.http.Post(dat["host"]).Send(params).End()
-
+func (clientProxy *ClientProxy) ReadFile(fromFilepath string, toFilepath string) {
+	params := FileParams{
+		ticket:     clientProxy.Token.Ticket,
+		sessionKey: clientProxy.Token.SessionKey,
+		filepath:   fromFilepath,
+	}
+	json := api.ReadFileRequest(params)
+	resp, body, errs = clientProxy.http.Post(json["host"]).Send(params).End()
+	checkErrors(errs)
+	clientProxy.write(toFilepath, body)
 }
 
-func (clientProxy *ClientProxy) Write(filepath, *File) {
-    params := FileParams{
-        ticket:     clientProxy.Ticket,
-        sessionKey: clientProxy.SessionKey,
-        filepath:   filepath
-    }
-    resp, body, errs := clientProxy.http.Post(writeRequestURL).Send(params).End()
-    var dat map[string]interface{}
-    err := json.Unmarshal(body, &dat)
-    if err == nil {
-        return
-    }
-    // Add file
-    resp, body, errs := clientProxy.http.Post(dat["host"]).Send(params).End()
+func (clientProxy *ClientProxy) WriteFile(fromFilepath string, toFilepath string) {
+	params := FileParams{
+		ticket:     clientProxy.Token.Ticket,
+		sessionKey: clientProxy.Token.SessionKey,
+		filepath:   toFilepath,
+	}
+	resp, body, errs := clientProxy.http.Post(writeRequestURL).Send(params).End()
+	checkErrors(errs)
+	data, err := clientProxy.parseJSON(body)
+	checkError(err)
+	file, err := clientProxy.read(fromFilepath)
+	checkError(err)
+	// Add file as uploaded param "file" + Ticket and Sessionkey + path
+	resp, body, errs = clientProxy.http.Post(data["host"]).Send(params).End()
+	checkErrors(errs)
 }
 
-func
+func (ClientProxy *ClientProxy) read(filepath string) ([]byte, error) {
+	return ioutil.ReadFile(filepath)
+}
+
+func (ClientProxy *ClientProxy) write(filepath string, data string) error {
+	return ioutil.WriteFile(filepath, []byte(data), 0644)
+}
+
+func (clientProxy *ClientProxy) parseJSON(str string) map[string]string {
+	var data map[string]string
+	err := json.Unmarshal([]byte(str), &data)
+	checkError(err)
+	return data
+}
+
+func checkError(err error) {
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+}
+
+func checkErrors(errs []error) {
+	if len(errs) > 0 {
+		fmt.Println("Errors:", errs)
+		os.Exit(1)
+	}
+}
