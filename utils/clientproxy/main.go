@@ -34,11 +34,9 @@ func (clientProxy *ClientProxy) Login(username string, password string) {
 }
 
 func (clientProxy *ClientProxy) ReadFile(fromFilepath string, toFilepath string) {
-	params := api.FileRequestParams{
-		Ticket:     clientProxy.Token.Ticket,
-		SessionKey: clientProxy.Token.SessionKey,
-		Filepath:   fromFilepath,
-	}
+	params := api.FileRequestParams{}
+	params.Body.Ticket = clientProxy.Token.Ticket
+	params.Body.Filepath = fromFilepath
 	json := api.RequestReadPermission(params)
 	body := api.ReadFile(json["host"], params)
 	clientProxy.write(toFilepath, body)
@@ -49,11 +47,9 @@ func (clientProxy *ClientProxy) WriteFile(fromFilepath string, toFilepath string
 	file, err := clientProxy.read(fromFilepath)
 	checkError(err)
 
-	params := api.FileRequestParams{
-		Ticket:     clientProxy.Token.Ticket,
-		SessionKey: clientProxy.Token.SessionKey,
-		Filepath:   toFilepath,
-	}
+	params := api.FileRequestParams{}
+	params.Body.Ticket = clientProxy.Token.Ticket
+	params.Body.Filepath = toFilepath
 	json := api.RequestWritePermission(params)
 
 	fileParams := api.FileParams{

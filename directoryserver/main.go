@@ -1,12 +1,12 @@
 package main
 
 import (
-	"os"
-
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/paterson/binder/directoryservice/store"
+	"github.com/paterson/binder/directoryserver/store"
 	"github.com/paterson/binder/utils/logger"
 	"github.com/paterson/binder/utils/request"
+	"os"
 )
 
 var Store *store.Store
@@ -14,7 +14,7 @@ var Store *store.Store
 func main() {
 	Store = store.DefaultStore()
 	Store.CreateDefaultFileServerRecord()
-	gin.DefaultWriter = logger.DirectoryServiceLogger
+	gin.DefaultWriter = logger.New("../log/directoryservice.log")
 	router := gin.Default()
 	router.POST("/request/read", readRequest)
 	router.POST("/request/write", writeRequest)
@@ -24,27 +24,28 @@ func main() {
 func readRequest(ctx *gin.Context) {
 	req, err := request.Authenticate(ctx)
 	if err == nil {
-		filepath := req.Param("filepath")
+		filepath := req.Params["filepath"]
 		Store = Store.HostForPath(filepath)
 		if Store.Result.Error == nil {
 			host := Store.Result.Host
-			req.Respond(request.StatusOK, request.Body{"host": host})
+			req.Respond(request.StatusOK, request.Params{"host": host})
 		} else {
-			req.Respond(request.Status404, request.Body{"error": "404"})
+			req.Respond(request.Status404, request.Params{"error": "404"})
 		}
 	}
 }
 
 func writeRequest(ctx *gin.Context) {
 	req, err := request.Authenticate(ctx)
+	fmt.Println("here")
 	if err == nil {
-		filepath := req.Param("filepath")
+		filepath := req.Params["filepath"]
 		Store = Store.EnsureHostExistsForPath(filepath)
 		if Store.Result.Error == nil {
 			host := Store.Result.Host
-			req.Respond(request.StatusOK, request.Body{"host": host})
+			req.Respond(request.StatusOK, request.Params{"host": host})
 		} else {
-			req.Respond(request.Status400, request.Body{"error": "Something went wrong"})
+			req.Respond(request.Status400, request.Params{"error": "Something went wrong"})
 		}
 	}
 }

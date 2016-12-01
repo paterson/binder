@@ -1,9 +1,8 @@
 package request
 
 import (
-	"mime/multipart"
-
 	"github.com/gin-gonic/gin"
+	"mime/multipart"
 )
 
 type Method string
@@ -16,36 +15,21 @@ const (
 /* Request. Key: Session key */
 type Request struct {
 	Ticket Ticket
-	Body   Body
+	Params Params
 	ctx    *gin.Context
 }
 
 type EncryptedRequest struct {
 	Ticket EncryptedTicket
-	body   EncryptedBody
+	Params EncryptedParams
 }
 
 func Authenticate(ctx *gin.Context) (Request, error) {
 	ticket := EncryptedTicket{SessionKey: EncryptedSessionKey(ctx.Param("ticket"))}
-	encryptedRequest := EncryptedRequest{Ticket: ticket, body: EncryptedBody(ctx.Param("body"))}
+	encryptedRequest := EncryptedRequest{Ticket: ticket, Params: NewEncryptedParams(ctx)}
 	request, err := encryptedRequest.decrypt()
 	request.ctx = ctx
 	return request, err
-}
-
-func (request Request) Method() string {
-	if request.ctx.Request.Method == "POST" {
-		return "POST"
-	}
-	return "GET"
-}
-
-func (request Request) Param(key string) string {
-	if request.Method() == "GET" {
-		return request.ctx.Query(key)
-	} else {
-		return request.ctx.PostForm(key)
-	}
 }
 
 func (request Request) SendFile(filepath string) {
@@ -58,20 +42,19 @@ func (request Request) RetrieveUploadedFile() (multipart.File, string, error) {
 	return file, filename, err
 }
 
-func (request Request) Respond(code int, body Body) {
-	response := Response{Body: body}
+func (request Request) Respond(code int, params Params) {
+	response := Response{Params: params}
 	encryptedResponse := response.encrypt(request.Ticket.SessionKey)
 	request.ctx.JSON(code, encryptedResponse.EncodeJSON())
 }
 
 func (encryptedRequest EncryptedRequest) decrypt() (Request, error) {
-	// decrypt request by decrypting ticket with server key, then decrypt body with session key in ticket
 	ticket := encryptedRequest.Ticket.Decrypt()
-	body, err := encryptedRequest.body.Decrypt(ticket.SessionKey)
-	request := Request{Ticket: ticket, Body: body}
+	params, err := encryptedRequest.Params.Decrypt(ticket.SessionKey)
+	request := Request{Ticket: ticket, Params: params}
 	return request, err
 }
 
 func (request Request) encrypt(sessionKey SessionKey) EncryptedRequest {
-	return EncryptedRequest{Ticket: request.Ticket.Encrypt(), body: request.Body.Encrypt(sessionKey)}
+	return EncryptedRequest{Ticket: request.Ticket.Encrypt(), Params: request.Params.Encrypt(sessionKey)}
 }

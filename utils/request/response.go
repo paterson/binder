@@ -1,9 +1,8 @@
 package request
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 var StatusOK = http.StatusOK
@@ -13,24 +12,26 @@ var Status400 = 400
 
 /* Response. Key: Session key */
 type Response struct {
-	Body Body
+	Params Params
 }
 
 type EncryptedResponse struct {
-	body EncryptedBody
+	Params EncryptedParams
 }
 
 func (encryptedResponse EncryptedResponse) EncodeJSON() gin.H {
-	return gin.H{
-		"body": encryptedResponse.body,
+	var result = make(gin.H)
+	for k, v := range encryptedResponse.Params {
+		result[k] = v
 	}
+	return result
 }
 
 func (encryptedResponse EncryptedResponse) decrypt(sessionKey SessionKey) (Response, error) {
-	body, err := encryptedResponse.body.Decrypt(sessionKey)
-	return Response{Body: body}, err
+	params, err := encryptedResponse.Params.Decrypt(sessionKey)
+	return Response{Params: params}, err
 }
 
 func (response Response) encrypt(sessionKey SessionKey) EncryptedResponse {
-	return EncryptedResponse{body: response.Body.Encrypt(sessionKey)}
+	return EncryptedResponse{Params: response.Params.Encrypt(sessionKey)}
 }

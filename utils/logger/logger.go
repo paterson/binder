@@ -1,15 +1,22 @@
 package logger
 
 import (
+	"io"
 	"os"
 )
 
-func New(logfile string) *os.File {
-	os.Remove(logfile)
-	f, _ := os.Create(logfile)
-	return f
+type Logger struct {
+	file *os.File
 }
 
-var AuthServiceLogger = New("./log/authservice.log")
-var DirectoryServiceLogger = New("./log/directoryservice.log")
-var FileServerLogger = New("./log/fileserver.log")
+func (logger Logger) Write(p []byte) (n int, err error) {
+	logger.file.WriteString(string(p))
+	return 0, nil
+}
+
+func New(logfile string) io.Writer {
+	os.Remove(logfile)
+	os.Create(logfile)
+	f, _ := os.OpenFile(logfile, os.O_APPEND|os.O_WRONLY, 0600)
+	return &Logger{file: f}
+}

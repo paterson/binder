@@ -13,7 +13,7 @@ import (
 
 func main() {
 	router := gin.Default()
-	gin.DefaultWriter = logger.FileServerLogger
+	gin.DefaultWriter = logger.New("../log/fileserver.log")
 	router.POST("/read", read)
 	router.POST("/write", write)
 	router.Run(port())
@@ -22,7 +22,7 @@ func main() {
 func read(ctx *gin.Context) {
 	req, err := request.Authenticate(ctx)
 	if err == nil {
-		filepath := req.Param("filepath")
+		filepath := req.Params["filepath"]
 		req.SendFile(filepath)
 	}
 }
@@ -34,7 +34,7 @@ func write(ctx *gin.Context) {
 		checkError(err)
 		err = storeFile(file, filename)
 		checkError(err)
-		req.Respond(request.StatusOK, request.Body{"success": "true"})
+		req.Respond(request.StatusOK, request.Params{"success": "true"})
 	}
 }
 

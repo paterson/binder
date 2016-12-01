@@ -21,9 +21,11 @@ type AuthenticateParams struct {
 }
 
 type FileRequestParams struct {
-	Ticket     request.EncryptedTicket
-	SessionKey request.SessionKey
-	Filepath   string
+	Body struct {
+		Ticket     request.EncryptedTicket
+		SessionKey request.SessionKey
+		Filepath   string
+	}
 }
 
 type FileParams struct {
