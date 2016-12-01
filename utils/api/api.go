@@ -11,8 +11,8 @@ import (
 const (
 	signupURL       = "http://localhost:3000/signup"
 	loginURL        = "http://localhost:3000/login"
-	readRequestURL  = "http://localhost:3002/request/read"
-	writeRequestURL = "http://localhost:3002/request/write"
+	readRequestURL  = "http://localhost:3001/request/read"
+	writeRequestURL = "http://localhost:3001/request/write"
 )
 
 type AuthenticateParams struct {

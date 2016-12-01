@@ -24,7 +24,7 @@ var defaultStore *Store
 
 func DefaultStore() *Store {
 	if defaultStore == nil {
-		db, err := bolt.Open("store/directoryservice.db", 0600, nil)
+		db, err := bolt.Open("directoryservice.db", 0600, nil)
 		checkError(err)
 		defaultStore = &Store{
 			db:            db,
@@ -84,7 +84,7 @@ func (s *Store) EnsureHostExistsForPath(path string) *Store {
 func (s *Store) CreateDefaultFileServerRecord() {
 	s.db.Update(func(tx *bolt.Tx) error {
 		bucket := s.findBucket(tx, s.serversBucket)
-		bucket.Put([]byte("/"), []byte("localhost:3003"))
+		bucket.Put([]byte("/"), []byte("localhost:3002"))
 		return nil
 	})
 }

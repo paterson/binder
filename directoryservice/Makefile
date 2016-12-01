@@ -2,4 +2,4 @@ install:
 	go install
 
 run:
-	directoryservice 3002 &
+	directoryservice 3001 &
