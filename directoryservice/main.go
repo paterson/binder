@@ -5,6 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/paterson/binder/directoryservice/store"
+	"github.com/paterson/binder/utils/logger"
+	"github.com/paterson/binder/utils/request"
 )
 
 var Store *store.Store
@@ -12,6 +14,7 @@ var Store *store.Store
 func main() {
 	Store = store.DefaultStore()
 	Store.CreateDefaultFileServerRecord()
+	gin.DefaultWriter = logger.DirectoryServiceLogger
 	router := gin.Default()
 	router.POST("/request/read", readRequest)
 	router.POST("/request/write", writeRequest)
@@ -25,9 +28,9 @@ func readRequest(ctx *gin.Context) {
 		Store = Store.HostForPath(filepath)
 		if Store.Result.Error == nil {
 			host := Store.Result.Host
-			request.Respond(request.StatusOK, request.Body{"host": host})
+			req.Respond(request.StatusOK, request.Body{"host": host})
 		} else {
-			request.Respond(request.Status404, request.Body{"error": "404"})
+			req.Respond(request.Status404, request.Body{"error": "404"})
 		}
 	}
 }
@@ -39,9 +42,9 @@ func writeRequest(ctx *gin.Context) {
 		Store = Store.EnsureHostExistsForPath(filepath)
 		if Store.Result.Error == nil {
 			host := Store.Result.Host
-			request.Respond(request.StatusOK, request.Body{"host": host})
+			req.Respond(request.StatusOK, request.Body{"host": host})
 		} else {
-			request.Respond(request.Status400, request.Body{"error": "Something went wrong"})
+			req.Respond(request.Status400, request.Body{"error": "Something went wrong"})
 		}
 	}
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/paterson/binder/clientproxy"
+	"github.com/paterson/binder/utils/clientproxy"
 )
 
 func main() {

@@ -1,11 +1,11 @@
 package store
 
 import (
-	"filepath"
 	"fmt"
-	"os"
-
 	"github.com/boltdb/bolt"
+	"math"
+	"os"
+	"path/filepath"
 )
 
 type Result struct {
@@ -30,9 +30,10 @@ func DefaultStore() *Store {
 			db:            db,
 			rootBucket:    []byte("root"),
 			serversBucket: []byte("servers"),
-			Result:        Result{FileServer: nil, Error: nil},
+			Result:        Result{Host: "", Error: nil},
 		}
 	}
+	return defaultStore
 }
 
 func (s *Store) HostForPath(path string) *Store {
@@ -40,7 +41,8 @@ func (s *Store) HostForPath(path string) *Store {
 	s.Result.Error = s.db.View(func(tx *bolt.Tx) error {
 		bucket := s.findBucket(tx, s.serversBucket)
 		val := bucket.Get([]byte(folderPath))
-		s.Result.Host = val
+		s.Result.Host = string(val)
+		return nil
 	})
 	return s
 }
@@ -48,7 +50,7 @@ func (s *Store) HostForPath(path string) *Store {
 func (s *Store) EnsureHostExistsForPath(path string) *Store {
 	folderPath := filepath.Dir(path)
 	s.db.View(func(tx *bolt.Tx) error {
-		s.HostForFilePath(folderPath)
+		s.HostForPath(folderPath)
 		if s.Result.Host != "" {
 			return nil
 		}
@@ -57,12 +59,12 @@ func (s *Store) EnsureHostExistsForPath(path string) *Store {
 		bucket := s.findBucket(tx, s.serversBucket)
 		dict := make(map[string]int)
 		c := bucket.Cursor()
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-			dict[k] = dict[k] + 1
+		for k, _ := c.First(); k != nil; k, _ = c.Next() {
+			dict[string(k)] = dict[string(k)] + 1
 		}
 
 		host := ""
-		min := MaxInt
+		min := math.MaxInt16
 		for key := range dict {
 			if dict[key] < min {
 				host = key
@@ -76,11 +78,14 @@ func (s *Store) EnsureHostExistsForPath(path string) *Store {
 		})
 		return nil
 	})
+	return s
 }
 
 func (s *Store) CreateDefaultFileServerRecord() {
 	s.db.Update(func(tx *bolt.Tx) error {
-		bucket.Put([]byte("/"), []byte("localhost:3004"))
+		bucket := s.findBucket(tx, s.serversBucket)
+		bucket.Put([]byte("/"), []byte("localhost:3003"))
+		return nil
 	})
 }
 

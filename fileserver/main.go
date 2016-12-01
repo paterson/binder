@@ -7,11 +7,13 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/paterson/binder/utils/logger"
 	"github.com/paterson/binder/utils/request"
 )
 
 func main() {
 	router := gin.Default()
+	gin.DefaultWriter = logger.FileServerLogger
 	router.POST("/read", read)
 	router.POST("/write", write)
 	router.Run(port())
