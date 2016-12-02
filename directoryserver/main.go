@@ -14,7 +14,6 @@ var Store *store.Store
 func main() {
 	Store = store.DefaultStore()
 	Store.CreateDefaultFileServerRecord()
-	gin.DefaultWriter = logger.New("../log/directoryservice.log")
 	router := gin.Default()
 	router.POST("/request/read", readRequest)
 	router.POST("/request/write", writeRequest)

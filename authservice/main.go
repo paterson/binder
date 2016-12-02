@@ -13,7 +13,6 @@ var Store *store.Store
 
 func main() {
 	Store = store.DefaultStore()
-	gin.DefaultWriter = logger.New("../log/authservice.log")
 	router := gin.Default()
 	router.POST("/signup", signup)
 	router.POST("/login", login)

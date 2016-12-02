@@ -13,7 +13,6 @@ import (
 
 func main() {
 	router := gin.Default()
-	gin.DefaultWriter = logger.New("../log/fileserver.log")
 	router.POST("/read", read)
 	router.POST("/write", write)
 	router.Run(port())
