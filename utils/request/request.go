@@ -25,7 +25,7 @@ type EncryptedRequest struct {
 }
 
 func Authenticate(ctx *gin.Context) (Request, error) {
-	ticket := EncryptedTicket{SessionKey: EncryptedSessionKey(ctx.Param("ticket"))}
+	ticket := EncryptedTicket{SessionKey: EncryptedSessionKey(ctx.PostForm("ticket"))}
 	encryptedRequest := EncryptedRequest{Ticket: ticket, Params: NewEncryptedParams(ctx)}
 	request, err := encryptedRequest.decrypt()
 	request.ctx = ctx
@@ -37,9 +37,8 @@ func (request Request) SendFile(filepath string) {
 }
 
 func (request Request) RetrieveUploadedFile() (multipart.File, string, error) {
-	file, header, err := request.ctx.Request.FormFile("file")
-	filename := header.Filename
-	return file, filename, err
+	file, header, err := request.ctx.Request.FormFile("file1")
+	return file, header.Filename, err
 }
 
 func (request Request) Respond(code int, params Params) {

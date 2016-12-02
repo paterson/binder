@@ -30,7 +30,7 @@ func GenerateToken() Token {
 	}
 }
 
-func TokenFromJSON(json map[string]string) EncryptedToken {
+func TokenFromJSON(json EncryptedParams) EncryptedToken {
 	return EncryptedToken{
 		Ticket:         EncryptedTicket{SessionKey: EncryptedSessionKey(json["ticket"])},
 		SessionKey:     EncryptedSessionKey(json["session_key"]),

@@ -28,10 +28,14 @@ func NewEncryptedParams(ctx *gin.Context) EncryptedParams {
 func (params EncryptedParams) Decrypt(sessionKey SessionKey) (Params, error) {
 	var result = make(Params)
 	for k, v := range params {
-		val, err := encryption.Decrypt(v, string(sessionKey))
-		result[k] = val
-		if err != nil {
-			return result, err
+		if k == "ticket" {
+			result[k] = v
+		} else {
+			val, err := encryption.Decrypt(string(sessionKey), v)
+			result[k] = val
+			if err != nil {
+				return result, err
+			}
 		}
 	}
 	return result, nil
@@ -40,7 +44,12 @@ func (params EncryptedParams) Decrypt(sessionKey SessionKey) (Params, error) {
 func (params Params) Encrypt(sessionKey SessionKey) EncryptedParams {
 	var result = make(EncryptedParams)
 	for k, v := range params {
-		result[k] = encryption.Encrypt(v, string(sessionKey))
+		if k == "ticket" {
+			result[k] = v
+		} else {
+			result[k] = encryption.Encrypt(string(sessionKey), v)
+		}
+
 	}
 	return result
 }

@@ -39,6 +39,7 @@ func write(ctx *gin.Context) {
 }
 
 func storeFile(file multipart.File, filename string) error {
+	os.Mkdir("./.files/", 0777)
 	out, err := os.Create("./.files/" + filename)
 	defer out.Close()
 	_, err = io.Copy(out, file)

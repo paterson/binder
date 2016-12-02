@@ -30,6 +30,11 @@ func DefaultStore() *Store {
 			usersBucket: []byte("users"),
 			Result:      Result{SuccessfulQuery: false, Error: nil},
 		}
+
+		defaultStore.Result.Error = defaultStore.db.Update(func(tx *bolt.Tx) error {
+			defaultStore.findOrCreateBucket(tx, defaultStore.usersBucket)
+			return nil
+		})
 	}
 	return defaultStore
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/paterson/binder/authservice/store"
 	"github.com/paterson/binder/utils/logger"
@@ -21,12 +22,12 @@ func main() {
 
 // Take in username and password, and store in db as (username, encrypt(password))
 func signup(ctx *gin.Context) {
-	user := store.User{Username: ctx.Param("username"), Password: ctx.Param("password")}
+	user := store.User{Username: ctx.PostForm("username"), Password: ctx.PostForm("password")}
 	Store = Store.CreateUser(&user)
 	if Store.Result.Error == nil {
 		token := request.GenerateToken()
 		response := request.AuthenticatedResponse{Token: token}
-		encryptedResponse := response.Encrypt(ctx.Param("password"))
+		encryptedResponse := response.Encrypt(ctx.PostForm("password"))
 		ctx.JSON(request.StatusOK, encryptedResponse.EncodeJSON())
 	} else {
 		ctx.JSON(request.StatusUnauthorized, gin.H{"status": "unauthorized"})
@@ -35,14 +36,16 @@ func signup(ctx *gin.Context) {
 
 // Find row with username in db and ensure encrypt(password) = encrypted_password
 func login(ctx *gin.Context) {
-	user := store.User{Username: ctx.Query("username"), Password: ctx.Query("password")}
+	user := store.User{Username: ctx.PostForm("username"), Password: ctx.PostForm("password")}
 	Store = Store.UserExists(&user)
 	if Store.Result.SuccessfulQuery {
+		fmt.Println("Successful Query")
 		token := request.GenerateToken()
 		response := request.AuthenticatedResponse{Token: token}
-		encryptedResponse := response.Encrypt(ctx.Query("password"))
+		encryptedResponse := response.Encrypt(ctx.PostForm("password"))
 		ctx.JSON(request.StatusOK, encryptedResponse.EncodeJSON())
 	} else {
+		fmt.Println("Not Successful Query")
 		ctx.JSON(request.StatusUnauthorized, gin.H{"status": "unauthorized"})
 	}
 }

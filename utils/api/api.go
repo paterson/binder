@@ -15,62 +15,55 @@ const (
 	writeRequestURL = "http://localhost:3001/request/write"
 )
 
-type AuthenticateParams struct {
-	Username string
-	Password string
-}
-
-type FileRequestParams struct {
-	Body struct {
-		Ticket     request.EncryptedTicket
-		SessionKey request.SessionKey
-		Filepath   string
-	}
-}
-
 type FileParams struct {
 	File     []byte
 	Filename string
 }
 
-func Signup(params AuthenticateParams) map[string]string {
-	resp, body, errs := gorequest.New().Post(signupURL).Send(params).EndBytes()
+func Signup(params request.Params) request.EncryptedParams {
+	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", signupURL, params))
+	resp, body, errs := gorequest.New().Post(signupURL).Type("form").Send(params).EndBytes()
 	validate(resp, errs)
 	return parseJSON(body)
 }
 
-func Login(params AuthenticateParams) map[string]string {
-	resp, body, errs := gorequest.New().Post(loginURL).Send(params).EndBytes()
+func Login(params request.Params) request.EncryptedParams {
+	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", loginURL, params))
+	resp, body, errs := gorequest.New().Post(loginURL).Type("form").Send(params).EndBytes()
 	validate(resp, errs)
 	return parseJSON(body)
 }
 
-func RequestWritePermission(params FileRequestParams) map[string]string {
-	resp, body, errs := gorequest.New().Post(writeRequestURL).Send(params).EndBytes()
+func RequestWritePermission(params request.EncryptedParams) request.EncryptedParams {
+	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", writeRequestURL, params))
+	resp, body, errs := gorequest.New().Post(writeRequestURL).Type("form").Send(params).EndBytes()
 	validate(resp, errs)
 	return parseJSON(body)
 }
 
-func RequestReadPermission(params FileRequestParams) map[string]string {
-	resp, body, errs := gorequest.New().Post(readRequestURL).Send(params).EndBytes()
+func RequestReadPermission(params request.EncryptedParams) request.EncryptedParams {
+	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", readRequestURL, params))
+	resp, body, errs := gorequest.New().Post(readRequestURL).Type("form").Send(params).EndBytes()
 	validate(resp, errs)
 	return parseJSON(body)
 }
 
-func WriteFile(url string, fileParams FileParams, params FileRequestParams) map[string]string {
-	resp, body, errs := gorequest.New().Post(url).SendFile(fileParams.File, fileParams.Filename, "file").Send(params).EndBytes()
+func WriteFile(url string, fileParams FileParams, params request.EncryptedParams) request.EncryptedParams {
+	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", url, params))
+	resp, body, errs := gorequest.New().Post(url).Type("multipart").SendFile(fileParams.File, fileParams.Filename, "file").Send(params).EndBytes()
 	validate(resp, errs)
 	return parseJSON(body)
 }
 
-func ReadFile(url string, params FileRequestParams) []byte {
+func ReadFile(url string, params request.EncryptedParams) []byte {
+	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", url, params))
 	resp, body, errs := gorequest.New().Post(url).Send(params).EndBytes()
 	validate(resp, errs)
 	return body
 }
 
-func parseJSON(bytes []byte) map[string]string {
-	var data map[string]string
+func parseJSON(bytes []byte) request.EncryptedParams {
+	var data request.EncryptedParams
 	err := json.Unmarshal(bytes, &data)
 	checkError(err)
 	return data
