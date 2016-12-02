@@ -26,7 +26,7 @@ func signup(ctx *gin.Context) {
 	if Store.Result.Error == nil {
 		token := request.GenerateToken()
 		response := request.AuthenticatedResponse{Token: token}
-		encryptedResponse := response.Encrypt(ctx.PostForm("password"))
+		encryptedResponse := response.Encrypt(user.Password)
 		ctx.JSON(request.StatusOK, encryptedResponse.EncodeJSON())
 	} else {
 		ctx.JSON(request.StatusUnauthorized, gin.H{"status": "unauthorized"})
@@ -41,7 +41,7 @@ func login(ctx *gin.Context) {
 		fmt.Println("Successful Query")
 		token := request.GenerateToken()
 		response := request.AuthenticatedResponse{Token: token}
-		encryptedResponse := response.Encrypt(ctx.PostForm("password"))
+		encryptedResponse := response.Encrypt(user.Password)
 		ctx.JSON(request.StatusOK, encryptedResponse.EncodeJSON())
 	} else {
 		fmt.Println("Not Successful Query")

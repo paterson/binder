@@ -4,3 +4,4 @@ log/
 test.png
 test1.png
 fileserver/.files/
+*/.DS_Store

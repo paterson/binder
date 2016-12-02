@@ -7,6 +7,6 @@ import (
 func main() {
 	clientproxy := clientproxy.New()
 	clientproxy.Signup("niall", "password")
-	//clientproxy.WriteFile("./test.png", "/test.png")
+	clientproxy.WriteFile("./test.png", "/test.png")
 	clientproxy.ReadFile("/test.png", "./test1.png")
 }
