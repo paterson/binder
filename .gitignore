@@ -1,3 +1,6 @@
 .DS_Store
 *.db
 log/
+test.png
+test1.png
+fileserver/.files/
