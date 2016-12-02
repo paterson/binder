@@ -57,7 +57,7 @@ func WriteFile(url string, fileParams FileParams, params request.EncryptedParams
 
 func ReadFile(url string, params request.EncryptedParams) []byte {
 	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", url, params))
-	resp, body, errs := gorequest.New().Post(url).Send(params).EndBytes()
+	resp, body, errs := gorequest.New().Post(url).Type("form").Send(params).EndBytes()
 	validate(resp, errs)
 	return body
 }

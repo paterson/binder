@@ -21,9 +21,10 @@ func main() {
 
 func read(ctx *gin.Context) {
 	req, err := request.Authenticate(ctx)
+	fmt.Println(fmt.Sprintf("%+v", req.Params))
 	if err == nil {
 		filepath := req.Params["filepath"]
-		req.SendFile(filepath)
+		req.SendFile("./.files" + filepath) // e.g ./.files/test.png
 	}
 }
 
