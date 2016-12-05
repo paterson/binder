@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"mime/multipart"
-	"os"
-
 	"github.com/gin-gonic/gin"
 	"github.com/paterson/binder/utils/logger"
 	"github.com/paterson/binder/utils/request"
+	"io"
+	"mime/multipart"
+	"os"
 )
 
 func main() {

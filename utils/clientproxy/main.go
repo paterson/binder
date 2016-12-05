@@ -39,7 +39,6 @@ func (clientProxy *ClientProxy) Login(username string, password string) {
 
 func (clientProxy *ClientProxy) ReadFile(fromFilepath string, toFilepath string) {
 	params := request.Params{"ticket": string(clientProxy.Token.Ticket.SessionKey), "filepath": fromFilepath}
-	fmt.Println(fmt.Sprintf("Sent Params %+v", params))
 	encryptedParams := params.Encrypt(clientProxy.Token.SessionKey)
 
 	encryptedJson := api.RequestReadPermission(encryptedParams)
@@ -56,7 +55,6 @@ func (clientProxy *ClientProxy) WriteFile(fromFilepath string, toFilepath string
 	checkError(err)
 
 	params := request.Params{"ticket": string(clientProxy.Token.Ticket.SessionKey), "filepath": toFilepath}
-	fmt.Println(fmt.Sprintf("Sent Params 1 %+v", params))
 	encryptedParams := params.Encrypt(clientProxy.Token.SessionKey)
 	encryptedJson := api.RequestWritePermission(encryptedParams)
 	json, err := encryptedJson.Decrypt(clientProxy.Token.SessionKey)
