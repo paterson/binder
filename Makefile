@@ -8,6 +8,7 @@ run:
 	$(MAKE) -C authservice run
 	$(MAKE) -C directoryserver run
 	$(MAKE) -C fileserver run
+	fileserver 3003
 
 kill:
 	lsof -ti:3000 | xargs kill 

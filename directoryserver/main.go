@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/paterson/binder/directoryserver/store"
-	"github.com/paterson/binder/utils/logger"
 	"github.com/paterson/binder/utils/request"
 	"os"
 )
@@ -24,7 +23,7 @@ func readRequest(ctx *gin.Context) {
 	req, err := request.Authenticate(ctx)
 	if err == nil {
 		filepath := req.Params["filepath"]
-		Store = Store.HostForPath(filepath)
+		Store = Store.HostsForPath(filepath)
 		if Store.Result.Error == nil {
 			req.Respond(request.StatusOK, request.Params{"hosts": Store.Result.Hosts})
 		} else {

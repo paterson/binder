@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/paterson/binder/utils/logger"
 	"github.com/paterson/binder/utils/replication"
 	"github.com/paterson/binder/utils/request"
 	"io"
@@ -38,6 +37,8 @@ func write(ctx *gin.Context) {
 		if req.Params["noreplication"] == "" {
 			replicator := replication.New(file, filepath, req.Ticket)
 			replicator.Replicate()
+		} else {
+			fmt.Println("Replicating...")
 		}
 		req.Respond(request.StatusOK, request.Params{"success": "true"})
 	}

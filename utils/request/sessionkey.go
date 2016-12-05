@@ -16,23 +16,23 @@ func NewSessionKey() SessionKey {
 }
 
 func (sessionKey SessionKey) Encrypt(key string) EncryptedSessionKey {
-	cipher := encryption.Encrypt(key, sessionKey.toString())
+	cipher := encryption.Encrypt(key, sessionKey.ToString())
 	return EncryptedSessionKey(cipher)
 }
 
 func (sessionKey EncryptedSessionKey) Decrypt(key string) SessionKey {
-	text, err := encryption.Decrypt(key, sessionKey.toString())
+	text, err := encryption.Decrypt(key, sessionKey.ToString())
 	if err != nil {
 		log.Fatal(err) // If this is failing, just kill because it's a systematic issue.
 	}
 	return SessionKey(text)
 }
 
-func (sessionKey SessionKey) toString() string {
+func (sessionKey SessionKey) ToString() string {
 	return string(sessionKey)
 }
 
-func (sessionKey EncryptedSessionKey) toString() string {
+func (sessionKey EncryptedSessionKey) ToString() string {
 	return string(sessionKey)
 }
 

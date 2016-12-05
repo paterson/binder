@@ -9,7 +9,7 @@ import (
 )
 
 type Result struct {
-	Hosts []string
+	Hosts string
 	Error error
 }
 
@@ -30,7 +30,7 @@ func DefaultStore() *Store {
 			db:          db,
 			rootBucket:  []byte("root"),
 			filesBucket: []byte("files"),
-			Result:      Result{Host: "", Error: nil},
+			Result:      Result{Hosts: "", Error: nil},
 		}
 	}
 	return defaultStore
@@ -40,7 +40,8 @@ func (s *Store) HostsForPath(path string) *Store {
 	s.Result.Error = s.db.View(func(tx *bolt.Tx) error {
 		bucket := s.findBucket(tx, s.filesBucket)
 		val := bucket.Get([]byte(path))
-		s.Result.Hosts = strings.Split(string(val), ",")
+		fmt.Println("Bucket val for path:", string(val))
+		s.Result.Hosts = string(val)
 		return nil
 	})
 	return s
@@ -48,8 +49,8 @@ func (s *Store) HostsForPath(path string) *Store {
 
 func (s *Store) EnsureHostExistsForPath(path string) *Store {
 	s.db.View(func(tx *bolt.Tx) error {
-		s.HostForPath(path)
-		if s.Result.Host != "" {
+		s.HostsForPath(path)
+		if s.Result.Hosts != "" {
 			return nil
 		}
 		// Host does not exist for this path, so create it.
@@ -57,13 +58,12 @@ func (s *Store) EnsureHostExistsForPath(path string) *Store {
 		bucket := s.findBucket(tx, s.filesBucket)
 		dict := make(map[string]int)
 		c := bucket.Cursor()
-		for k, _ := c.First(); k != nil; k, _ = c.Next() {
-			hosts := strings.Split(string(val), ",")
-			for host := range hosts {
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			hosts := strings.Split(string(v), ",")
+			for _, host := range hosts {
 				dict[host] = dict[host] + 1
 			}
 		}
-
 		host := ""
 		min := math.MaxInt16
 		for key := range dict {
@@ -71,12 +71,13 @@ func (s *Store) EnsureHostExistsForPath(path string) *Store {
 				host = key
 			}
 		}
-		s.Result.Host = host
-
+		s.Result.Hosts = host
 		s.Result.Error = s.db.Update(func(tx *bolt.Tx) error {
-			bucket.Put([]byte(folderPath), []byte(host))
+			bucket := s.findOrCreateBucket(tx, s.filesBucket)
+			bucket.Put([]byte(path), []byte(host))
 			return nil
 		})
+		fmt.Println("Bucket val for path:", []byte(bucket.Get([]byte(path))))
 		return nil
 	})
 	return s
@@ -86,7 +87,7 @@ func (s *Store) CreateDefaultFileServerRecord() {
 	s.db.Update(func(tx *bolt.Tx) error {
 		rootBucket, _ := tx.CreateBucketIfNotExists(s.rootBucket)
 		bucket, _ := rootBucket.CreateBucketIfNotExists(s.filesBucket)
-		hosts := []string{"http://localhost:3002"}
+		hosts := []string{"http://localhost:3002", "http://localhost:3003"}
 		str := strings.Join(hosts, ",")
 		bucket.Put([]byte("/"), []byte(str))
 		return nil
