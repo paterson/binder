@@ -5,8 +5,10 @@ import (
 	"github.com/paterson/binder/utils/api"
 	"github.com/paterson/binder/utils/request"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type ClientProxy struct {
@@ -45,7 +47,12 @@ func (clientProxy *ClientProxy) ReadFile(fromFilepath string, toFilepath string)
 	json, err := encryptedJson.Decrypt(clientProxy.Token.SessionKey)
 	checkError(err)
 
-	body := api.ReadFile(json["host"], encryptedParams)
+	// Pick a random host of file servers to read from (replication)
+	hosts := strings.Split(json["hosts"], ",")
+	host := hosts[rand.Intn(len(hosts))]
+	hostUrl := host + "/read"
+
+	body := api.ReadFile(hostUrl, encryptedParams)
 	clientProxy.write(toFilepath, body)
 	fmt.Println(fmt.Sprintf("Received Data %+v", json))
 }
@@ -60,11 +67,16 @@ func (clientProxy *ClientProxy) WriteFile(fromFilepath string, toFilepath string
 	json, err := encryptedJson.Decrypt(clientProxy.Token.SessionKey)
 	checkError(err)
 
+	// Pick a random host of file servers to write (replication)
+	hosts := strings.Split(json["hosts"], ",")
+	host := hosts[rand.Intn(len(hosts))]
+	hostUrl := host + "/write"
+
 	fileParams := api.FileParams{
 		File:     file,
 		Filename: filepath.Base(fromFilepath),
 	}
-	api.WriteFile(json["host"], fileParams, encryptedParams)
+	api.WriteFile(hostUrl, fileParams, encryptedParams)
 	fmt.Println(fmt.Sprintf("Received Data %+v", json))
 }
 

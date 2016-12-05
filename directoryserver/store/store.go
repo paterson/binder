@@ -5,19 +5,19 @@ import (
 	"github.com/boltdb/bolt"
 	"math"
 	"os"
-	"path/filepath"
+	"strings"
 )
 
 type Result struct {
-	Host  string
+	Hosts []string
 	Error error
 }
 
 type Store struct {
-	db            *bolt.DB
-	rootBucket    []byte
-	serversBucket []byte
-	Result        Result
+	db          *bolt.DB
+	rootBucket  []byte
+	filesBucket []byte
+	Result      Result
 }
 
 var defaultStore *Store
@@ -27,40 +27,41 @@ func DefaultStore() *Store {
 		db, err := bolt.Open("directoryservice.db", 0600, nil)
 		checkError(err)
 		defaultStore = &Store{
-			db:            db,
-			rootBucket:    []byte("root"),
-			serversBucket: []byte("servers"),
-			Result:        Result{Host: "", Error: nil},
+			db:          db,
+			rootBucket:  []byte("root"),
+			filesBucket: []byte("files"),
+			Result:      Result{Host: "", Error: nil},
 		}
 	}
 	return defaultStore
 }
 
-func (s *Store) HostForPath(path string) *Store {
-	folderPath := filepath.Dir(path)
+func (s *Store) HostsForPath(path string) *Store {
 	s.Result.Error = s.db.View(func(tx *bolt.Tx) error {
-		bucket := s.findBucket(tx, s.serversBucket)
-		val := bucket.Get([]byte(folderPath))
-		s.Result.Host = string(val)
+		bucket := s.findBucket(tx, s.filesBucket)
+		val := bucket.Get([]byte(path))
+		s.Result.Hosts = strings.Split(string(val), ",")
 		return nil
 	})
 	return s
 }
 
 func (s *Store) EnsureHostExistsForPath(path string) *Store {
-	folderPath := filepath.Dir(path)
 	s.db.View(func(tx *bolt.Tx) error {
-		s.HostForPath(folderPath)
+		s.HostForPath(path)
 		if s.Result.Host != "" {
 			return nil
 		}
-		// Host does not exist for this folderpath, so create.
-		// Now find the host with the least number of folders.
-		bucket := s.findBucket(tx, s.serversBucket)
+		// Host does not exist for this path, so create it.
+		// Now find the host with the least number of files.
+		bucket := s.findBucket(tx, s.filesBucket)
 		dict := make(map[string]int)
 		c := bucket.Cursor()
 		for k, _ := c.First(); k != nil; k, _ = c.Next() {
-			dict[string(k)] = dict[string(k)] + 1
+			hosts := strings.Split(string(val), ",")
+			for host := range hosts {
+				dict[host] = dict[host] + 1
+			}
 		}
 
 		host := ""
@@ -84,8 +85,10 @@ func (s *Store) EnsureHostExistsForPath(path string) *Store {
 func (s *Store) CreateDefaultFileServerRecord() {
 	s.db.Update(func(tx *bolt.Tx) error {
 		rootBucket, _ := tx.CreateBucketIfNotExists(s.rootBucket)
-		bucket, _ := rootBucket.CreateBucketIfNotExists(s.serversBucket)
-		bucket.Put([]byte("/"), []byte("http://localhost:3002"))
+		bucket, _ := rootBucket.CreateBucketIfNotExists(s.filesBucket)
+		hosts := []string{"http://localhost:3002"}
+		str := strings.Join(hosts, ",")
+		bucket.Put([]byte("/"), []byte(str))
 		return nil
 	})
 }

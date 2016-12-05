@@ -26,8 +26,7 @@ func readRequest(ctx *gin.Context) {
 		filepath := req.Params["filepath"]
 		Store = Store.HostForPath(filepath)
 		if Store.Result.Error == nil {
-			host := Store.Result.Host + "/read"
-			req.Respond(request.StatusOK, request.Params{"host": host})
+			req.Respond(request.StatusOK, request.Params{"hosts": Store.Result.Hosts})
 		} else {
 			req.Respond(request.Status404, request.Params{"error": "404"})
 		}
@@ -40,8 +39,7 @@ func writeRequest(ctx *gin.Context) {
 		filepath := req.Params["filepath"]
 		Store = Store.EnsureHostExistsForPath(filepath)
 		if Store.Result.Error == nil {
-			host := Store.Result.Host + "/write"
-			req.Respond(request.StatusOK, request.Params{"host": host})
+			req.Respond(request.StatusOK, request.Params{"hosts": Store.Result.Hosts})
 		} else {
 			fmt.Println(request.Params{"error": "error"})
 			req.Respond(request.Status400, request.Params{"error": "Something went wrong"})

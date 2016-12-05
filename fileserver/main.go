@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/paterson/binder/utils/logger"
+	"github.com/paterson/binder/utils/replication"
 	"github.com/paterson/binder/utils/request"
 	"io"
 	"mime/multipart"
@@ -29,10 +30,15 @@ func read(ctx *gin.Context) {
 func write(ctx *gin.Context) {
 	req, err := request.Authenticate(ctx)
 	if err == nil { // Auth is valid
-		file, filename, err := req.RetrieveUploadedFile()
+		file, _, err := req.RetrieveUploadedFile()
 		checkError(err)
-		err = storeFile(file, filename)
+		filepath := req.Params["filepath"]
+		err = storeFile(file, filepath)
 		checkError(err)
+		if req.Params["noreplication"] == "" {
+			replicator := replication.New(file, filepath, req.Ticket)
+			replicator.Replicate()
+		}
 		req.Respond(request.StatusOK, request.Params{"success": "true"})
 	}
 }
