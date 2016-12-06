@@ -3,6 +3,7 @@ package clientproxy
 import (
 	"fmt"
 	"github.com/paterson/binder/utils/api"
+	"github.com/paterson/binder/utils/cache"
 	"github.com/paterson/binder/utils/request"
 	"io/ioutil"
 	"math/rand"
@@ -13,10 +14,13 @@ import (
 
 type ClientProxy struct {
 	Token request.Token
+	cache cache.Cache
 }
 
 func New() ClientProxy {
-	return ClientProxy{}
+	return ClientProxy{
+		cache: cache.New(2), // 2MB in memory cache
+	}
 }
 
 func (clientProxy *ClientProxy) Signup(username string, password string) {
@@ -40,6 +44,12 @@ func (clientProxy *ClientProxy) Login(username string, password string) {
 }
 
 func (clientProxy *ClientProxy) ReadFile(fromFilepath string, toFilepath string) {
+	data, err := clientProxy.cache.Get(fromFilepath)
+	if err == nil {
+		clientProxy.write(toFilepath, data)
+		return
+	}
+
 	params := request.Params{"ticket": string(clientProxy.Token.Ticket.SessionKey), "filepath": fromFilepath}
 	encryptedParams := params.Encrypt(clientProxy.Token.SessionKey)
 
@@ -77,6 +87,7 @@ func (clientProxy *ClientProxy) WriteFile(fromFilepath string, toFilepath string
 		Filename: filepath.Base(fromFilepath),
 	}
 	api.WriteFile(hostUrl, fileParams, encryptedParams)
+	clientProxy.cache.Set(toFilepath, file)
 	fmt.Println(fmt.Sprintf("Received Data %+v", json))
 }
 

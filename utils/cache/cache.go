@@ -3,6 +3,7 @@ package cache
 import (
 	"errors"
 	"math"
+	"strconv"
 	"time"
 )
 
@@ -24,17 +25,17 @@ type Cache struct {
 
 func New(sizeInMB int) Cache {
 	return Cache{
-		storage: make(map[string]CacheItem),
+		items:   make(map[string]CacheItem),
 		maxsize: sizeInMB * MB,
 	}
 }
 
 func (cache Cache) Get(key string) ([]byte, error) {
-	item := cache.items[key]
-	if item {
-		return item.data
+	item, present := cache.items[key]
+	if present {
+		return item.data, nil
 	} else {
-		return []byte{}, errors.new("Not Found")
+		return []byte{}, errors.New("Not Found")
 	}
 }
 
@@ -44,9 +45,10 @@ func (cache *Cache) Set(key string, bytes []byte) {
 	}
 	item := CacheItem{
 		size: len(bytes),
-		time: time.Now().Format(time.RFC850),
+		time: currentTimestamp(),
 		data: bytes,
 	}
+	cache.items[key] = item
 }
 
 func (cache Cache) size() int {
@@ -67,4 +69,9 @@ func (cache *Cache) evict() {
 		}
 	}
 	delete(cache.items, minKey)
+}
+
+func currentTimestamp() int {
+	t, _ := strconv.Atoi(time.Now().Format(time.RFC850))
+	return t
 }
