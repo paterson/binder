@@ -35,7 +35,6 @@ func (r Replication) Replicate() {
 	json, err := encryptedJson.Decrypt(r.ticket.SessionKey)
 	fmt.Println(fmt.Sprintf("%+v", json))
 	checkError(err)
-
 	hosts := strings.Split(json["hosts"], ",") // If len(hosts) == 1 add more?
 	for _, host := range hosts {
 		hostUrl := host + "/write"

@@ -22,7 +22,7 @@ func read(ctx *gin.Context) {
 	fmt.Println(fmt.Sprintf("%+v", req.Params))
 	if err == nil {
 		filepath := req.Params["filepath"]
-		req.SendFile("./.files" + filepath) // e.g ./.files/test.png
+		req.SendFile("./.files" + filepath)
 	}
 }
 
@@ -37,8 +37,6 @@ func write(ctx *gin.Context) {
 		if req.Params["noreplication"] == "" {
 			replicator := replication.New(file, filepath, req.Ticket)
 			replicator.Replicate()
-		} else {
-			fmt.Println("Replicating...")
 		}
 		req.Respond(request.StatusOK, request.Params{"success": "true"})
 	}

@@ -1,12 +1,25 @@
 package main
 
 import (
+	"fmt"
 	"github.com/paterson/binder/utils/clientproxy"
 )
 
 func main() {
+	printSteps()
 	clientproxy := clientproxy.New()
 	clientproxy.Signup("niall", "password")
 	clientproxy.WriteFile("./test.png", "/test.png")
 	clientproxy.ReadFile("/test.png", "./test1.png")
+}
+
+func printSteps() {
+	fmt.Println("")
+	fmt.Println("*******************************************************************")
+	fmt.Println("This default client implementation does a number of things:")
+	fmt.Println("* Signups a user")
+	fmt.Println("* Writes the file ./test.png. This will create write it to both running file servers (./.files and ./fileserver/.files)")
+	fmt.Println("* Reads the file back down to test1.png and stores it in cache.")
+	fmt.Println("*******************************************************************")
+	fmt.Println("")
 }

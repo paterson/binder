@@ -57,7 +57,7 @@ func (clientProxy *ClientProxy) ReadFile(fromFilepath string, toFilepath string)
 	json, err := encryptedJson.Decrypt(clientProxy.Token.SessionKey)
 	checkError(err)
 
-	// Pick a random host of file servers to read from (replication)
+	// Pick a random host from the hosts (file servers) to read from (replication)
 	hosts := strings.Split(json["hosts"], ",")
 	host := hosts[rand.Intn(len(hosts))]
 	hostUrl := host + "/read"
