@@ -6,3 +6,6 @@ run:
 
 clean:
 	rm -f auth.db
+
+docker:
+	docker build -t paterson/binder-authservice .
