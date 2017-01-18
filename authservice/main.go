@@ -49,5 +49,5 @@ func login(ctx *gin.Context) {
 }
 
 func port() string {
-	return ":" + os.Args[1]
+	return ":" + os.Getenv("PORT")
 }
