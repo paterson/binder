@@ -51,7 +51,7 @@ func storeFile(file multipart.File, filename string) error {
 }
 
 func port() string {
-	return ":" + os.Args[1]
+	return ":" + os.Getenv("PORT")
 }
 
 func checkError(err error) {
