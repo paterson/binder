@@ -6,7 +6,6 @@ import (
 	"github.com/paterson/binder/utils/cache"
 	"github.com/paterson/binder/utils/request"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,7 +24,11 @@ func New() ClientProxy {
 
 func (clientProxy *ClientProxy) Signup(username string, password string) {
 	params := request.Params{"username": username, "password": password}
-	json := api.Signup(params)
+	json, err := api.Signup(params)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
 	encryptedToken := request.TokenFromJSON(json)
 	token := encryptedToken.Decrypt(password)
 	clientProxy.Token = token
@@ -35,7 +38,11 @@ func (clientProxy *ClientProxy) Signup(username string, password string) {
 func (clientProxy *ClientProxy) Login(username string, password string) {
 	params := request.Params{"username": username, "password": password}
 	fmt.Println(fmt.Sprintf("Sent Params %+v", params))
-	json := api.Login(params)
+	json, err := api.Login(params)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
 	encryptedToken := request.TokenFromJSON(json)
 	token := encryptedToken.Decrypt(password)
 	fmt.Println("Token:", token)
@@ -53,17 +60,25 @@ func (clientProxy *ClientProxy) ReadFile(fromFilepath string, toFilepath string)
 	params := request.Params{"ticket": string(clientProxy.Token.Ticket.SessionKey), "filepath": fromFilepath}
 	encryptedParams := params.Encrypt(clientProxy.Token.SessionKey)
 
-	encryptedJson := api.RequestReadPermission(encryptedParams)
+	encryptedJson, err := api.RequestReadPermission(encryptedParams)
+	checkError(err)
 	json, err := encryptedJson.Decrypt(clientProxy.Token.SessionKey)
 	checkError(err)
 
-	// Pick a random host from the hosts (file servers) to read from (replication)
+	// Try each host until one succeeds (So if one is down, system is still fine) (replication)
 	hosts := strings.Split(json["hosts"], ",")
-	host := hosts[rand.Intn(len(hosts))]
-	hostUrl := host + "/read"
-
-	body := api.ReadFile(hostUrl, encryptedParams)
-	clientProxy.write(toFilepath, body)
+	i := 0
+	successful := false
+	for !successful {
+		host := hosts[i]
+		hostUrl := host + "/read"
+		body, err := api.ReadFile(hostUrl, encryptedParams)
+		if err == nil {
+			clientProxy.write(toFilepath, body)
+			successful = true
+		}
+		i += 1
+	}
 	fmt.Println("Read File and wrote to local file path")
 }
 
@@ -72,22 +87,20 @@ func (clientProxy *ClientProxy) LockFile(filepath string) bool {
 	sessionKey := string(clientProxy.Token.Ticket.SessionKey)
 	params := request.Params{"ticket": sessionKey, "filepath": filepath}
 	encryptedParams := params.Encrypt(clientProxy.Token.SessionKey)
-	encryptedJson := api.RequestLock(encryptedParams)
-	json, err := encryptedJson.Decrypt(clientProxy.Token.SessionKey)
-	checkError(err)
+	encryptedJson, e := api.RequestLock(encryptedParams)
+	_, err := encryptedJson.Decrypt(clientProxy.Token.SessionKey)
 
-	return json["error"] == ""
+	return e == nil && err == nil
 }
 
 func (clientProxy *ClientProxy) UnlockFile(filepath string) bool {
 	sessionKey := string(clientProxy.Token.Ticket.SessionKey)
 	params := request.Params{"ticket": sessionKey, "filepath": filepath, "lock_key": sessionKey}
 	encryptedParams := params.Encrypt(clientProxy.Token.SessionKey)
-	encryptedJson := api.RequestUnlock(encryptedParams)
-	json, err := encryptedJson.Decrypt(clientProxy.Token.SessionKey)
-	checkError(err)
+	encryptedJson, e := api.RequestUnlock(encryptedParams)
+	_, err := encryptedJson.Decrypt(clientProxy.Token.SessionKey)
 
-	return json["error"] == ""
+	return e == nil && err == nil
 
 }
 
@@ -97,21 +110,29 @@ func (clientProxy *ClientProxy) WriteFile(fromFilepath string, toFilepath string
 
 	params := request.Params{"ticket": string(clientProxy.Token.Ticket.SessionKey), "filepath": toFilepath}
 	encryptedParams := params.Encrypt(clientProxy.Token.SessionKey)
-	encryptedJson := api.RequestWritePermission(encryptedParams)
+	encryptedJson, err := api.RequestWritePermission(encryptedParams)
+	checkError(err)
 	json, err := encryptedJson.Decrypt(clientProxy.Token.SessionKey)
 	checkError(err)
 
-	// Pick a random host of file servers to write (replication)
+	// Try each host until one succeeds (So if one is down, system is still fine) (replication)
 	hosts := strings.Split(json["hosts"], ",")
-	host := hosts[rand.Intn(len(hosts))]
-	hostUrl := host + "/write"
-
-	fileParams := api.FileParams{
-		File:     file,
-		Filename: filepath.Base(fromFilepath),
+	i := 0
+	successful := false
+	for !successful {
+		host := hosts[i]
+		hostUrl := host + "/write"
+		fileParams := api.FileParams{
+			File:     file,
+			Filename: filepath.Base(fromFilepath),
+		}
+		_, err := api.WriteFile(hostUrl, fileParams, encryptedParams)
+		if err == nil {
+			fmt.Println("Wrote File to fileserver")
+			successful = true
+		}
+		i++
 	}
-	api.WriteFile(hostUrl, fileParams, encryptedParams)
-	fmt.Println("Wrote File to fileserver")
 }
 
 func (ClientProxy *ClientProxy) read(path string) ([]byte, error) {

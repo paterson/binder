@@ -29,7 +29,7 @@ Build and run the project:
 make
 ```
 
-This sets up the authentication server, the directory service and the two initial file servers. To then run the client, **open a new tab** and run:
+This sets up the authentication server, the directory service and the two initial file servers. To then run the client, **open a new terminal tab/window** and run:
 
 ```bash
 client

@@ -31,9 +31,9 @@ func (r Replication) Replicate() {
 	params := request.Params{"ticket": r.ticket.Encrypt().SessionKey.ToString(), "filepath": r.filepath, "noreplication": "true"}
 	encryptedParams := params.Encrypt(r.ticket.SessionKey)
 
-	encryptedJson := api.RequestReadPermission(encryptedParams)
+	encryptedJson, err := api.RequestReadPermission(encryptedParams)
+	checkError(err)
 	json, err := encryptedJson.Decrypt(r.ticket.SessionKey)
-	fmt.Println(fmt.Sprintf("%+v", json))
 	checkError(err)
 	hosts := strings.Split(json["hosts"], ",") // If len(hosts) == 1 add more?
 	for _, host := range hosts {
