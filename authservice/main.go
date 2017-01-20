@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/paterson/binder/authservice/store"
 	"github.com/paterson/binder/utils/request"
@@ -37,13 +36,11 @@ func login(ctx *gin.Context) {
 	user := store.User{Username: ctx.PostForm("username"), Password: ctx.PostForm("password")}
 	Store = Store.UserExists(&user)
 	if Store.Result.SuccessfulQuery {
-		fmt.Println("Successful Query")
 		token := request.GenerateToken()
 		response := request.AuthenticatedResponse{Token: token}
 		encryptedResponse := response.Encrypt(user.Password)
 		ctx.JSON(request.StatusOK, encryptedResponse.EncodeJSON())
 	} else {
-		fmt.Println("Not Successful Query")
 		ctx.JSON(request.StatusUnauthorized, gin.H{"status": "unauthorized"})
 	}
 }

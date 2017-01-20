@@ -17,7 +17,7 @@ func (timeoutPeriod TimeoutPeriod) Encrypt(key string) EncryptedTimeoutPeriod {
 func (timeoutPeriod EncryptedTimeoutPeriod) Decrypt(key string) TimeoutPeriod {
 	text, err := encryption.Decrypt(key, timeoutPeriod.toString())
 	if err != nil {
-		log.Fatal(err) // for now.....
+		log.Fatal(err)
 	}
 	return TimeoutPeriod(text)
 }

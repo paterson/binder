@@ -19,7 +19,7 @@ func (serverIdentity ServerIdentity) Encrypt(key string) EncryptedServerIdentity
 func (serverIdentity EncryptedServerIdentity) Decrypt(key string) ServerIdentity {
 	text, err := encryption.Decrypt(key, serverIdentity.toString())
 	if err != nil {
-		log.Fatal(err) // for now.....
+		log.Fatal(err)
 	}
 	return ServerIdentity(text)
 }

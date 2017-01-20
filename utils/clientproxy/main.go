@@ -37,7 +37,6 @@ func (clientProxy *ClientProxy) Signup(username string, password string) {
 
 func (clientProxy *ClientProxy) Login(username string, password string) {
 	params := request.Params{"username": username, "password": password}
-	fmt.Println(fmt.Sprintf("Sent Params %+v", params))
 	json, err := api.Login(params)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -45,7 +44,6 @@ func (clientProxy *ClientProxy) Login(username string, password string) {
 	}
 	encryptedToken := request.TokenFromJSON(json)
 	token := encryptedToken.Decrypt(password)
-	fmt.Println("Token:", token)
 	clientProxy.Token = token
 	fmt.Println(fmt.Sprintf("Received Data %+v", json))
 }

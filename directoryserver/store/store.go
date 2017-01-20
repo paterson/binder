@@ -84,8 +84,6 @@ func (s *Store) IsValidLockKeyForPath(key, filepath string) *Store {
 	s.db.View(func(tx *bolt.Tx) error {
 		bucket := s.findBucket(tx, s.locksBucket)
 		val := bucket.Get([]byte(filepath))
-		fmt.Println("Valid?", string(val))
-		fmt.Println("Key:", key)
 		s.Result.ValidLockKey = string(val) == key && key != ""
 		return nil
 	})
