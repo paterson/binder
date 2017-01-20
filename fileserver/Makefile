@@ -2,7 +2,7 @@ install:
 	go install
 
 run:
-	fileserver 3002 &
+	PORT=3002 fileserver &
 
 clean:
 	rm -rf .files

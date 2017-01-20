@@ -2,7 +2,7 @@ install:
 	go install
 
 run:
-	authservice 3000 &
+	PORT=3000 authservice &
 
 clean:
 	rm -f auth.db

@@ -3,20 +3,24 @@ package store
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
+	"github.com/paterson/binder/utils/constants"
 	"os"
 	"sort"
 	"strings"
 )
 
 type Result struct {
-	Hosts string
-	Error error
+	Hosts        string
+	Error        error
+	Locked       bool
+	ValidLockKey bool
 }
 
 type Store struct {
 	db          *bolt.DB
 	rootBucket  []byte
 	filesBucket []byte
+	locksBucket []byte
 	Result      Result
 }
 
@@ -30,7 +34,8 @@ func DefaultStore() *Store {
 			db:          db,
 			rootBucket:  []byte("root"),
 			filesBucket: []byte("files"),
-			Result:      Result{Hosts: "", Error: nil},
+			locksBucket: []byte("locks"),
+			Result:      Result{Hosts: "", Error: nil, Locked: false, ValidLockKey: false},
 		}
 	}
 	return defaultStore
@@ -74,11 +79,58 @@ func (s *Store) EnsureHostExistsForPath(path string) *Store {
 	return s
 }
 
+// Valid Lock key if value for filepath == key
+func (s *Store) IsValidLockKeyForPath(key, filepath string) *Store {
+	s.db.View(func(tx *bolt.Tx) error {
+		bucket := s.findBucket(tx, s.locksBucket)
+		val := bucket.Get([]byte(filepath))
+		fmt.Println("Valid?", string(val))
+		fmt.Println("Key:", key)
+		s.Result.ValidLockKey = string(val) == key && key != ""
+		return nil
+	})
+	return s
+}
+
+// Locked if value for filepath is not empty
+func (s *Store) GetLockStatusForPath(filepath string) *Store {
+	s.db.View(func(tx *bolt.Tx) error {
+		bucket := s.findBucket(tx, s.locksBucket)
+		val := bucket.Get([]byte(filepath))
+		s.Result.Locked = string(val) != ""
+		return nil
+	})
+	return s
+}
+
+func (s *Store) LockPathWithKey(filepath, key string) *Store {
+	s.db.Update(func(tx *bolt.Tx) error {
+		bucket := s.findBucket(tx, s.locksBucket)
+		bucket.Put([]byte(filepath), []byte(key))
+		return nil
+	})
+	return s
+}
+
+func (s *Store) UnlockPathWithKey(filepath, key string) *Store {
+	s.db.Update(func(tx *bolt.Tx) error {
+		bucket := s.findBucket(tx, s.locksBucket)
+		val := bucket.Get([]byte(filepath))
+		if string(val) == key && key != "" {
+			bucket.Put([]byte(filepath), []byte(""))
+			s.Result.Locked = false
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *Store) Seed() {
 	s.db.Update(func(tx *bolt.Tx) error {
 		rootBucket, _ := tx.CreateBucketIfNotExists(s.rootBucket)
 		bucket, _ := rootBucket.CreateBucketIfNotExists(s.filesBucket)
-		hosts := []string{"http://localhost:3002", "http://localhost:3003"}
+		rootBucket.CreateBucketIfNotExists(s.locksBucket)
+		hosts := []string{constants.FileServerURL1, constants.FileServerURL2}
 		str := strings.Join(hosts, ",")
 		bucket.Put([]byte("/"), []byte(str))
 		return nil
@@ -98,8 +150,7 @@ func (s *Store) findOrCreateBucket(tx *bolt.Tx, bucketName []byte) *bolt.Bucket 
 }
 
 // Takes a map of strings -> int, and returns back the strings ordered by their corresponding int value
-func sortMapKeysByValue(m map[string]int) []string {
-	var res []string
+func sortMapKeysByValue(m map[string]int) (res []string) {
 	var a []int
 	n := map[int][]string{}
 

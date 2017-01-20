@@ -4,15 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/parnurzeal/gorequest"
+	"github.com/paterson/binder/utils/constants"
 	"github.com/paterson/binder/utils/request"
 	"os"
-)
-
-const (
-	signupURL       = "http://localhost:3000/signup"
-	loginURL        = "http://localhost:3000/login"
-	readRequestURL  = "http://localhost:3001/request/read"
-	writeRequestURL = "http://localhost:3001/request/write"
 )
 
 type FileParams struct {
@@ -21,29 +15,43 @@ type FileParams struct {
 }
 
 func Signup(params request.Params) request.EncryptedParams {
-	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", signupURL, params))
-	resp, body, errs := gorequest.New().Post(signupURL).Type("form").Send(params).EndBytes()
+	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", constants.SignupURL, params))
+	resp, body, errs := gorequest.New().Post(constants.SignupURL).Type("form").Send(params).EndBytes()
 	validate(resp, errs)
 	return parseJSON(body)
 }
 
 func Login(params request.Params) request.EncryptedParams {
-	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", loginURL, params))
-	resp, body, errs := gorequest.New().Post(loginURL).Type("form").Send(params).EndBytes()
+	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", constants.LoginURL, params))
+	resp, body, errs := gorequest.New().Post(constants.LoginURL).Type("form").Send(params).EndBytes()
 	validate(resp, errs)
 	return parseJSON(body)
 }
 
 func RequestWritePermission(params request.EncryptedParams) request.EncryptedParams {
-	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", writeRequestURL, params))
-	resp, body, errs := gorequest.New().Post(writeRequestURL).Type("form").Send(params).EndBytes()
+	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", constants.WriteRequestURL, params))
+	resp, body, errs := gorequest.New().Post(constants.WriteRequestURL).Type("form").Send(params).EndBytes()
 	validate(resp, errs)
 	return parseJSON(body)
 }
 
 func RequestReadPermission(params request.EncryptedParams) request.EncryptedParams {
-	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", readRequestURL, params))
-	resp, body, errs := gorequest.New().Post(readRequestURL).Type("form").Send(params).EndBytes()
+	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", constants.ReadRequestURL, params))
+	resp, body, errs := gorequest.New().Post(constants.ReadRequestURL).Type("form").Send(params).EndBytes()
+	validate(resp, errs)
+	return parseJSON(body)
+}
+
+func RequestLock(params request.EncryptedParams) request.EncryptedParams {
+	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", constants.LockRequestURL, params))
+	resp, body, errs := gorequest.New().Post(constants.LockRequestURL).Type("form").Send(params).EndBytes()
+	validate(resp, errs)
+	return parseJSON(body)
+}
+
+func RequestUnlock(params request.EncryptedParams) request.EncryptedParams {
+	fmt.Println(fmt.Sprintf("Posting to url %s with params %+v:", constants.UnlockRequestURL, params))
+	resp, body, errs := gorequest.New().Post(constants.UnlockRequestURL).Type("form").Send(params).EndBytes()
 	validate(resp, errs)
 	return parseJSON(body)
 }

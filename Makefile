@@ -14,7 +14,7 @@ run:
 	$(MAKE) -C authservice run
 	$(MAKE) -C directoryserver run
 	$(MAKE) -C fileserver run
-	fileserver 3003
+	PORT=3003 fileserver
 
 kill:
 	lsof -ti:3000 | xargs kill

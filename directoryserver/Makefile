@@ -2,7 +2,7 @@ install:
 	go install
 
 run:
-	directoryserver 3001 &
+	PORT=3001 directoryserver &
 
 clean:
 	rm -f directoryservice.db

@@ -67,6 +67,30 @@ func (clientProxy *ClientProxy) ReadFile(fromFilepath string, toFilepath string)
 	fmt.Println(fmt.Sprintf("Received Data %+v", json))
 }
 
+/* Use Session key to identify client locking file */
+func (clientProxy *ClientProxy) LockFile(filepath string) bool {
+	sessionKey := string(clientProxy.Token.Ticket.SessionKey)
+	params := request.Params{"ticket": sessionKey, "filepath": filepath}
+	encryptedParams := params.Encrypt(clientProxy.Token.SessionKey)
+	encryptedJson := api.RequestLock(encryptedParams)
+	json, err := encryptedJson.Decrypt(clientProxy.Token.SessionKey)
+	checkError(err)
+
+	return json["error"] == ""
+}
+
+func (clientProxy *ClientProxy) UnlockFile(filepath string) bool {
+	sessionKey := string(clientProxy.Token.Ticket.SessionKey)
+	params := request.Params{"ticket": sessionKey, "filepath": filepath}
+	encryptedParams := params.Encrypt(clientProxy.Token.SessionKey)
+	encryptedJson := api.RequestUnlock(encryptedParams)
+	json, err := encryptedJson.Decrypt(clientProxy.Token.SessionKey)
+	checkError(err)
+
+	return json["error"] == ""
+
+}
+
 func (clientProxy *ClientProxy) WriteFile(fromFilepath string, toFilepath string) {
 	file, err := clientProxy.read(fromFilepath)
 	checkError(err)
