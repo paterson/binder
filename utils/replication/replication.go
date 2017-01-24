@@ -33,8 +33,10 @@ func (r Replication) Replicate() {
 
 	encryptedJson, err := api.RequestReadPermission(encryptedParams)
 	checkError(err)
+	fmt.Println("Here")
 	json, err := encryptedJson.Decrypt(r.ticket.SessionKey)
 	checkError(err)
+	fmt.Println("Here1")
 	hosts := strings.Split(json["hosts"], ",")
 	for _, host := range hosts {
 		hostUrl := host + "/write"

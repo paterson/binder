@@ -15,11 +15,11 @@ var ip = os.Getenv("IP") + ":" + os.Getenv("PORT")
 var port = ":" + os.Getenv("PORT")
 
 func main() {
+	api.AddFileserver(ip)
 	router := gin.Default()
 	router.POST("/read", read)
 	router.POST("/write", write)
 	router.Run(port)
-	api.AddFileserver(ip)
 }
 
 func read(ctx *gin.Context) {

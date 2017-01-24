@@ -72,10 +72,10 @@ func ReadFile(url string, params request.EncryptedParams) ([]byte, error) {
 }
 
 func AddFileserver(host string) error {
-	params := map[string]interface{}{"fileserver": host}
-	resp, body, errs := gorequest.New().Post(constants.AddFileserverURL).Type("form").Send(params).EndBytes()
+	params := map[string]interface{}{"host": host}
+	resp, _, errs := gorequest.New().Get(constants.AddFileserverURL).Type("form").Query(params).EndBytes()
 	err := validate(resp, errs)
-	return parseJSON(json), err
+	return err
 }
 
 func parseJSON(bytes []byte) request.EncryptedParams {

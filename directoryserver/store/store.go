@@ -3,7 +3,6 @@ package store
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
-	"github.com/paterson/binder/utils/constants"
 	"os"
 	"sort"
 	"strings"
@@ -135,9 +134,13 @@ func (s *Store) Seed() {
 
 func (s *Store) AddFileserver(fileserver string) *Store {
 	s.db.Update(func(tx *bolt.Tx) error {
-		bucket := s.findBucket(tx, s.locksBucket)
+		bucket := s.findBucket(tx, s.filesBucket)
 		val := bucket.Get([]byte("/"))
 		hosts := strings.Split(string(val), ",")
+		if len(hosts) > 0 && hosts[0] == "" {
+			// Remove first element if it's an empty string due to golang's silly Split functionality
+			hosts = hosts[1:]
+		}
 		hosts = append(hosts, fileserver)
 		str := strings.Join(hosts, ",")
 		bucket.Put([]byte("/"), []byte(str))

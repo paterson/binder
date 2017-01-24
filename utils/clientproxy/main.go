@@ -112,7 +112,7 @@ func (clientProxy *ClientProxy) WriteFile(fromFilepath string, toFilepath string
 	checkError(err)
 	json, err := encryptedJson.Decrypt(clientProxy.Token.SessionKey)
 	checkError(err)
-
+	fmt.Println("JSON:", json)
 	// Try each host until one succeeds (So if one is down, system is still fine) (replication)
 	hosts := strings.Split(json["hosts"], ",")
 	i := 0

@@ -18,7 +18,7 @@ func main() {
 	router.POST("/request/write", writeRequest)
 	router.POST("/request/lock", lockRequest)
 	router.POST("/request/unlock", unlockRequest)
-	router.POST("/fileserver/create", createFileserver)
+	router.GET("/fileserver/create", createFileserver)
 	router.Run(port())
 }
 
@@ -81,9 +81,11 @@ func unlockRequest(ctx *gin.Context) {
 }
 
 func createFileserver(ctx *gin.Context) {
-	fileserver = req.Params["fileserver"]
+	fmt.Println("Adding fileserver")
+	fileserver := ctx.Request.URL.Query()["host"][0]
+	fmt.Println("Host:", fileserver)
 	Store = Store.AddFileserver(fileserver)
-	req.Respond(request.StatusOK, request.Params{"success": "true"})
+	ctx.JSON(200, request.Params{"success": "true"})
 }
 
 func port() string {
