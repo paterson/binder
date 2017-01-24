@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/paterson/binder/utils/api"
 	"github.com/paterson/binder/utils/replication"
 	"github.com/paterson/binder/utils/request"
 	"io"
@@ -10,11 +11,15 @@ import (
 	"os"
 )
 
+var ip = os.Getenv("IP") + ":" + os.Getenv("PORT")
+var port = ":" + os.Getenv("PORT")
+
 func main() {
 	router := gin.Default()
 	router.POST("/read", read)
 	router.POST("/write", write)
-	router.Run(port())
+	router.Run(port)
+	api.AddFileserver(ip)
 }
 
 func read(ctx *gin.Context) {
@@ -48,10 +53,6 @@ func storeFile(file multipart.File, filename string) error {
 	defer out.Close()
 	_, err = io.Copy(out, file)
 	return err
-}
-
-func port() string {
-	return ":" + os.Getenv("PORT")
 }
 
 func checkError(err error) {

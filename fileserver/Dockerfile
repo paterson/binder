@@ -9,4 +9,7 @@ RUN go install -v
 # Set the PORT environment variable inside the container
 ENV PORT 8080
 
+# Todo: Get Docker IP
+ENV IP http://localhost
+
 EXPOSE 8080

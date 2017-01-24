@@ -128,11 +128,22 @@ func (s *Store) Seed() {
 		rootBucket, _ := tx.CreateBucketIfNotExists(s.rootBucket)
 		bucket, _ := rootBucket.CreateBucketIfNotExists(s.filesBucket)
 		rootBucket.CreateBucketIfNotExists(s.locksBucket)
-		hosts := []string{constants.FileServerURL1, constants.FileServerURL2}
+		bucket.Put([]byte("/"), []byte(""))
+		return nil
+	})
+}
+
+func (s *Store) AddFileserver(fileserver string) *Store {
+	s.db.Update(func(tx *bolt.Tx) error {
+		bucket := s.findBucket(tx, s.locksBucket)
+		val := bucket.Get([]byte("/"))
+		hosts := strings.Split(string(val), ",")
+		hosts = append(hosts, fileserver)
 		str := strings.Join(hosts, ",")
 		bucket.Put([]byte("/"), []byte(str))
 		return nil
 	})
+	return s
 }
 
 func (s *Store) findBucket(tx *bolt.Tx, bucketName []byte) *bolt.Bucket {

@@ -7,6 +7,5 @@ const (
 	WriteRequestURL  = "http://localhost:3001/request/write"
 	LockRequestURL   = "http://localhost:3001/request/lock"
 	UnlockRequestURL = "http://localhost:3001/request/unlock"
-	FileServerURL1   = "http://localhost:3002"
-	FileServerURL2   = "http://localhost:3003"
+	AddFileserverURL = "http://localhost:3001/fileserver/create"
 )
