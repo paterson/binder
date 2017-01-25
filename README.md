@@ -7,6 +7,7 @@
 - [x] Token Based Authentication Service
 - [x] Distributed File Servers
 - [x] Directory Service to co-ordinate the file system
+- [x] File servers are registed with the directory service dynamically upon startup
 - [x] Encryption of all data transferred
 - [x] Replication
 - [x] File locking to ensure correctness
@@ -60,13 +61,13 @@ To send requests to the server the client now uses the session key to encrypt al
 This is an effective and secure system for a distributed system. Once the system components all have a shared server key, they can each individually authenticate a request.
 
 ### Distributed File Servers
-The system can utilise an unlimited number of file servers, and adding a new file server is as simple as adding it to the directory service's database. Any number of file servers can be spun up quickly using docker.  
+The system can utilise an unlimited number of file servers, and adding a new file server is as simple as adding it to the directory service's database. Any number of file servers can be spun up quickly using docker.
 
 ### Replication
 Any files added to the system will automatically be replicated to a number of other file servers (up to 4) so that the system will continue to function if a file server goes down. 
 
 ### Directory Service to Co-ordinate The File System
-The directory service co-ordinates the file system - it keeps track of the the file servers, routes read and write requests, handles locking and manages replication of file servers. The directory service also ensures that the system remains balanced - the files are evenly distributed over the file servers by allocating new files to the least used file servers. 
+The directory service co-ordinates the file system - it keeps track of the the file servers, routes read and write requests, handles locking and manages replication of file servers. The directory service also ensures that the system remains balanced - the files are evenly distributed over the file servers by allocating new files to the least used file servers. The file servers register with the directory service upon booting up so file servers can be added dynamically simply by deploying another file server 
 
 ### File Locking
 
